@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment | Thicha</title>
+  <meta name="description" content="Test payment page for Thicha courses with Stripe and PayPal." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="payment.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Payment navigation">
+      <a href="index.html" class="logo" aria-label="Thicha home">
+        <span class="logo-mark">TH</span>
+        <span>Thicha</span>
+      </a>
+      <div class="payment-header-actions">
+        <a href="join-course.html" class="btn btn-small btn-login">Courses</a>
+        <a href="profile.html" class="btn btn-small btn-login">Profile</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="payment-page">
+    <section class="payment-shell container">
+      <article class="payment-card">
+        <p class="eyebrow">Test payment</p>
+        <h1 id="course-title">Loading course...</h1>
+        <p class="payment-lead" id="course-description">Choose Card, QR Payment, or PayPal to complete the test payment.</p>
+
+        <div class="payment-summary">
+          <span>Amount</span>
+          <strong id="course-price">Loading...</strong>
+        </div>
+
+        <div class="payment-tabs" role="tablist" aria-label="Payment method">
+          <button type="button" class="payment-tab active" data-method="card">Card</button>
+          <button type="button" class="payment-tab" data-method="qr">QR Payment</button>
+          <button type="button" class="payment-tab" data-method="paypal">PayPal</button>
+        </div>
+
+        <section class="payment-method-panel active" id="card-panel">
+          <div class="stripe-panel">
+            <h2>Pay by Card</h2>
+            <p>Card payments use Stripe Checkout. Test card: <strong>4242 4242 4242 4242</strong>, any future date, any CVC.</p>
+            <button type="button" class="btn full-width" id="pay-card-btn">Continue to Card Payment</button>
+          </div>
+        </section>
+
+        <section class="payment-method-panel" id="qr-panel">
+          <div class="stripe-panel">
+            <h2>Pay by QR Payment</h2>
+            <p>QR Payment uses Stripe PromptPay Checkout in test mode.</p>
+            <button type="button" class="btn full-width" id="pay-qr-btn">Continue to QR Payment</button>
+          </div>
+        </section>
+
+        <section class="payment-method-panel" id="paypal-panel">
+          <div class="stripe-panel">
+            <h2>Pay by PayPal</h2>
+            <p>PayPal uses standalone PayPal Checkout. Add your PayPal sandbox Client ID and Secret in <code>.env</code>.</p>
+            <div id="paypal-buttons"></div>
+          </div>
+        </section>
+
+        <p class="payment-note">Localhost setup: website on port 5500, payment API on port 4242. Card/QR uses Stripe; PayPal uses PayPal Checkout.</p>
+        <p class="payment-status" id="payment-status"></p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      arrayUnion,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const API_BASE = "http://localhost:4242";
+
+    const courses = {
+      "beginner-thai-course": {
+        id: "beginner-thai-course",
+        title: "Complete Beginner Thai Course",
+        description: "A friendly course package designed for students who want clear lessons and practical Thai speaking skills.",
+        thbDisplay: "฿1,390",
+        usdDisplay: "$39.00"
+      },
+      "thai-speaking-practice": {
+        id: "thai-speaking-practice",
+        title: "Thai Speaking Practice Course",
+        description: "A practical speaking course for students who want guided conversation practice.",
+        thbDisplay: "฿890",
+        usdDisplay: "$25.00"
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get("course") || "beginner-thai-course";
+    const course = courses[courseId] || courses["beginner-thai-course"];
+    const stripeSessionId = params.get("stripe_session_id");
+    const stripeCancelled = params.get("stripe_cancelled");
+
+    const tabs = document.querySelectorAll(".payment-tab");
+    const panels = document.querySelectorAll(".payment-method-panel");
+    const payCardBtn = document.getElementById("pay-card-btn");
+    const payQrBtn = document.getElementById("pay-qr-btn");
+    const paymentStatus = document.getElementById("payment-status");
+    const paypalButtonsContainer = document.getElementById("paypal-buttons");
+
+    let currentUser = null;
+    let handledStripeReturn = false;
+    let paypalLoaded = false;
+
+    document.getElementById("course-title").textContent = course.title;
+    document.getElementById("course-description").textContent = course.description;
+    document.getElementById("course-price").textContent = `${course.thbDisplay} / ${course.usdDisplay} PayPal`;
+
+    function setStatus(message, type = "") {
+      paymentStatus.textContent = message;
+      paymentStatus.className = `payment-status ${type}`.trim();
+    }
+
+    async function getAuthHeader() {
+      if (!currentUser) throw new Error("Please log in before paying.");
+      const idToken = await currentUser.getIdToken();
+      return { Authorization: `Bearer ${idToken}` };
+    }
+
+    async function enrollCurrentUser(paidCourseId) {
+      if (!currentUser || !paidCourseId) return;
+
+      await setDoc(doc(db, "users", currentUser.uid), {
+        enrolledCourses: arrayUnion(paidCourseId),
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function finishPaidCourse(paidCourseId) {
+      await enrollCurrentUser(paidCourseId);
+      setStatus("Payment successful. Course added to your account. Redirecting...", "success");
+      setTimeout(() => { window.location.href = "profile.html"; }, 1200);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", async () => {
+        const method = tab.dataset.method;
+
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        panels.forEach((panel) => panel.classList.toggle("active", panel.id === `${method}-panel`));
+        setStatus("");
+
+        if (method === "paypal") {
+          await loadPayPalButtons();
+        }
+      });
+    });
+
+    async function startStripeCheckout(method) {
+      if (!currentUser) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const button = method === "promptpay" ? payQrBtn : payCardBtn;
+      button.disabled = true;
+      setStatus(`Creating Stripe ${method === "promptpay" ? "QR Payment" : "card"} checkout session...`);
+
+      try {
+        const result = await fetch(`${API_BASE}/api/create-stripe-checkout-session`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(await getAuthHeader())
+          },
+          body: JSON.stringify({
+            courseId: course.id,
+            method
+          })
+        });
+
+        const data = await result.json();
+        if (!result.ok) throw new Error(data.error || "Could not create Stripe Checkout session.");
+        if (!data.checkoutUrl) throw new Error("Stripe did not return a checkout URL.");
+
+        window.location.href = data.checkoutUrl;
+      } catch (error) {
+        setStatus(error.message, "error");
+        button.disabled = false;
+      }
+    }
+
+    payCardBtn.addEventListener("click", () => startStripeCheckout("card"));
+    payQrBtn.addEventListener("click", () => startStripeCheckout("promptpay"));
+
+    async function loadPayPalButtons() {
+      if (paypalLoaded) return;
+
+      try {
+        const configResult = await fetch(`${API_BASE}/api/config`);
+        const config = await configResult.json();
+
+        if (!config.paypalClientId) {
+          paypalButtonsContainer.innerHTML = `
+            <div class="payment-warning">
+              Add PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET to your .env file, then restart npm start.
+            </div>
+          `;
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(config.paypalClientId)}&currency=USD&intent=capture`;
+        script.onload = renderPayPalButtons;
+        script.onerror = () => setStatus("Could not load PayPal SDK.", "error");
+        document.body.appendChild(script);
+        paypalLoaded = true;
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    }
+
+    function renderPayPalButtons() {
+      if (!window.paypal) {
+        setStatus("PayPal SDK was not loaded.", "error");
+        return;
+      }
+
+      window.paypal.Buttons({
+        createOrder: async () => {
+          const result = await fetch(`${API_BASE}/api/create-paypal-order`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(await getAuthHeader())
+            },
+            body: JSON.stringify({ courseId: course.id })
+          });
+
+          const data = await result.json();
+          if (!result.ok) throw new Error(data.error || "Could not create PayPal order.");
+          return data.orderId;
+        },
+        onApprove: async (data) => {
+          setStatus("Capturing PayPal payment...");
+
+          const result = await fetch(`${API_BASE}/api/capture-paypal-order`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(await getAuthHeader())
+            },
+            body: JSON.stringify({ orderId: data.orderID })
+          });
+
+          const capture = await result.json();
+          if (!result.ok) throw new Error(capture.error || "Could not capture PayPal payment.");
+
+          if (capture.paid) {
+            await finishPaidCourse(capture.courseId || course.id);
+          } else {
+            setStatus(`PayPal status: ${capture.status || capture.captureStatus}.`, "");
+          }
+        },
+        onCancel: () => {
+          setStatus("PayPal payment was cancelled.", "");
+        },
+        onError: (error) => {
+          setStatus(error.message || "PayPal payment failed.", "error");
+        }
+      }).render("#paypal-buttons");
+    }
+
+    async function handleStripeReturnIfNeeded() {
+      if (handledStripeReturn || !stripeSessionId || !currentUser) return;
+
+      handledStripeReturn = true;
+      setStatus("Checking Stripe payment status...");
+
+      try {
+        const result = await fetch(`${API_BASE}/api/check-stripe-session/${stripeSessionId}`, {
+          headers: await getAuthHeader()
+        });
+
+        const data = await result.json();
+        if (!result.ok) throw new Error(data.error || "Could not check Stripe session.");
+
+        if (data.paid) {
+          await finishPaidCourse(data.courseId || course.id);
+        } else {
+          setStatus(`Stripe session status: ${data.status}; payment: ${data.paymentStatus}.`, "");
+        }
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      currentUser = user;
+
+      if (stripeCancelled) {
+        setStatus("Stripe payment was cancelled. You can choose another method.", "");
+      }
+
+      await handleStripeReturnIfNeeded();
+    });
+  </script>
+</body>
+</html>

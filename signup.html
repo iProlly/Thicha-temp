@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up | Learn Thai Online</title>
+  <meta name="description" content="Sign up page layout for the Thai course website." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="login.css" />
+  <link rel="stylesheet" href="signup.css" />
+</head>
+<body>
+  <main class="login-page signup-page">
+    <section class="login-wrapper signup-wrapper">
+      <div class="login-showcase signup-showcase">
+        <h1>Start your Thai learning journey</h1>
+        <p>Access your lessons, worksheets, quizzes, and speaking practice from one clean student dashboard.</p>
+
+        <div class="login-feature-list">
+          <div>
+            <strong>Structured lessons</strong>
+            <p>Continue from where you left off anytime.</p>
+          </div>
+          <div>
+            <strong>Track your progress</strong>
+            <p>See your performance throughout the course.</p>
+          </div>
+          <div>
+            <strong>Friendly learning experience</strong>
+            <p>Designed for beginner students learning Thai.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-form-area">
+        <div class="login-card signup-card">
+          <p class="eyebrow">Student Sign Up</p>
+          <h2>Create your account</h2>
+          <p>Enter your information below.</p>
+
+          <form class="login-form" id="signup-form">
+            <div class="form-group">
+              <label for="full-name">Name and surname</label>
+              <input type="text" id="full-name" placeholder="Enter your full name" autocomplete="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Username</label>
+              <input type="text" id="email" placeholder="Choose a username" autocomplete="username" required />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <div class="password-field">
+                <input type="password" id="password" placeholder="Enter your password" autocomplete="new-password" required />
+                <button type="button" class="password-toggle" data-target="password" aria-label="Show password">👁</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirm-password">Confirm password</label>
+              <div class="password-field">
+                <input type="password" id="confirm-password" placeholder="Confirm your password" autocomplete="new-password" required />
+                <button type="button" class="password-toggle" data-target="confirm-password" aria-label="Show confirmed password">👁</button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn full-width">Create Account</button>
+          </form>
+
+          <p class="signup-text">
+            Already have an account?
+            <a href="login.html">Log in</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const signupForm = document.getElementById("signup-form");
+    const passwordToggles = document.querySelectorAll(".password-toggle");
+
+    passwordToggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        const input = document.getElementById(toggle.dataset.target);
+        const isPassword = input.type === "password";
+
+        input.type = isPassword ? "text" : "password";
+        toggle.textContent = isPassword ? "🙈" : "👁";
+        toggle.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+      });
+    });
+
+    signupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const fullName = document.getElementById("full-name").value.trim();
+      const username = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+
+      if (!fullName || !username || !password || !confirmPassword) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      const email = username + "@thicha.com";
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        await updateProfile(user, {
+          displayName: fullName
+        });
+
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          fullName: fullName,
+          username: username,
+          email: email,
+          role: "student",
+          createdAt: serverTimestamp()
+        });
+
+        alert("Account created successfully");
+        window.location.href = "index.html";
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

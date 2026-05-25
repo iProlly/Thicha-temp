@@ -1,0 +1,15 @@
+{
+  "name": "thicha-payments-localhost",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Localhost payment backend for Thicha with Stripe Card/QR Payment and standalone PayPal.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest"
+  }
+}

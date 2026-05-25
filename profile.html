@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile Dashboard | Thicha</title>
+  <meta name="description" content="Student profile dashboard for the Thai course website." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="profile.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Profile navigation">
+      <a href="index.html" class="logo" aria-label="Thicha home">
+        <span class="logo-mark">TH</span>
+        <span>Thicha</span>
+      </a>
+
+      <div class="profile-header-actions">
+        <a href="index.html" class="btn btn-small btn-login">Home</a>
+        <button type="button" class="btn btn-small btn-login" id="profile-logout-btn">Log Out</button>
+        <div class="profile-circle" id="dashboard-profile-circle" title="Profile"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="dashboard-page">
+    <section class="dashboard-shell container">
+      <aside class="dashboard-sidebar" aria-label="Dashboard menu">
+        <div class="dashboard-user-card">
+          <div class="dashboard-avatar" id="dashboard-avatar"></div>
+          <strong id="sidebar-name">Student</strong>
+          <span id="sidebar-role">Student account</span>
+        </div>
+
+        <nav class="dashboard-tabs">
+          <button type="button" class="dashboard-tab active" data-tab="profile">Profile</button>
+          <button type="button" class="dashboard-tab" data-tab="courses">My Course</button>
+          <button type="button" class="dashboard-tab" data-tab="chat">Chat</button>
+          <button type="button" class="dashboard-tab" data-tab="settings">Settings</button>
+        </nav>
+      </aside>
+
+      <section class="dashboard-content">
+        <div class="dashboard-panel active" id="profile-panel">
+          <p class="eyebrow">Student dashboard</p>
+          <h1>Profile</h1>
+          <p class="dashboard-lead">View your account information and learning details.</p>
+
+          <div class="profile-info-grid">
+            <article class="profile-info-card editable-profile-card">
+              <button type="button" class="profile-edit-btn" data-edit="name" aria-label="Edit name">✎</button>
+              <span>Name</span>
+              <strong id="profile-full-name">Loading...</strong>
+            </article>
+            <article class="profile-info-card editable-profile-card">
+              <button type="button" class="profile-edit-btn" data-edit="username" aria-label="Edit username">✎</button>
+              <span>Username</span>
+              <strong id="profile-username">Loading...</strong>
+            </article>
+            <article class="profile-info-card">
+              <span>Email</span>
+              <strong id="profile-email">Loading...</strong>
+            </article>
+            <article class="profile-info-card">
+              <span>Role</span>
+              <strong id="profile-role">Student</strong>
+            </article>
+          </div>
+
+          <form class="profile-edit-form" id="profile-edit-form">
+            <div class="profile-edit-form-header">
+              <div>
+                <p class="eyebrow">Edit profile</p>
+                <h2 id="profile-edit-title">Edit profile</h2>
+              </div>
+              <button type="button" class="profile-edit-close" id="profile-edit-close" aria-label="Close edit form">×</button>
+            </div>
+
+            <div class="profile-edit-fields">
+              <div class="form-group" id="edit-name-group">
+                <label for="edit-full-name">Name and surname</label>
+                <input type="text" id="edit-full-name" placeholder="Enter your name" />
+              </div>
+
+              <div class="form-group" id="edit-username-group">
+                <label for="edit-username">Username</label>
+                <input type="text" id="edit-username" placeholder="Enter your username" />
+                <small>For normal username/password accounts, this also updates your login username.</small>
+              </div>
+            </div>
+
+            <div class="profile-edit-actions">
+              <button type="button" class="btn btn-secondary" id="profile-edit-cancel">Cancel</button>
+              <button type="submit" class="btn">Save Changes</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="dashboard-panel" id="courses-panel">
+          <p class="eyebrow" id="courses-eyebrow">Learning area</p>
+          <h1>My Course</h1>
+          <p class="dashboard-lead" id="courses-lead">Your enrolled course will appear here.</p>
+
+          <div class="course-card-grid" id="profile-course-list">
+            <article class="course-dashboard-card">
+              <div>
+                <span class="course-tag">Active course</span>
+                <h2>Complete Beginner Thai Course</h2>
+                <p>Continue your Thai learning journey with structured chapters, worksheets, and quizzes.</p>
+              </div>
+              <a href="course.html?id=beginner-thai-course" class="btn">Open Course</a>
+            </article>
+          </div>
+        </div>
+
+        <div class="dashboard-panel" id="chat-panel">
+          <p class="eyebrow" id="chat-eyebrow">Messages</p>
+          <h1>Chat</h1>
+          <p class="dashboard-lead" id="chat-lead">Students can message teachers. Teachers can message students.</p>
+
+          <div class="chat-shell">
+            <aside class="chat-contact-list" aria-label="Chat contacts">
+              <h2 id="chat-contact-title">Contacts</h2>
+              <div id="chat-contact-list" class="chat-contact-items">
+                <p class="chat-empty">Loading contacts...</p>
+              </div>
+            </aside>
+
+            <section class="chat-window" aria-label="Chat messages">
+              <div class="chat-window-header">
+                <div>
+                  <span id="chat-active-role">Select a contact</span>
+                  <strong id="chat-active-name">No conversation selected</strong>
+                </div>
+              </div>
+
+              <div class="chat-messages" id="chat-messages">
+                <p class="chat-empty">Choose a contact to start chatting.</p>
+              </div>
+
+              <form class="chat-compose" id="chat-compose-form">
+                <input type="text" id="chat-message-input" placeholder="Type your message..." autocomplete="off" disabled />
+                <button type="submit" class="btn" id="chat-send-btn" disabled>Send</button>
+              </form>
+            </section>
+          </div>
+        </div>
+
+        <div class="dashboard-panel" id="settings-panel">
+          <p class="eyebrow">Account</p>
+          <h1>Settings</h1>
+          <p class="dashboard-lead">Manage basic account actions.</p>
+
+          <div class="settings-card">
+            <h2>Sign out</h2>
+            <p>Log out from this device and return to the homepage.</p>
+            <button type="button" class="btn" id="settings-logout-btn">Log Out</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+      updateProfile,
+      updateEmail
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp,
+      collection,
+      getDocs,
+      query,
+      where,
+      addDoc,
+      onSnapshot,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const tabs = document.querySelectorAll(".dashboard-tab");
+    const panels = document.querySelectorAll(".dashboard-panel");
+    const logoutButtons = [
+      document.getElementById("profile-logout-btn"),
+      document.getElementById("settings-logout-btn")
+    ];
+    const editButtons = document.querySelectorAll(".profile-edit-btn");
+    const editForm = document.getElementById("profile-edit-form");
+    const editTitle = document.getElementById("profile-edit-title");
+    const editNameGroup = document.getElementById("edit-name-group");
+    const editUsernameGroup = document.getElementById("edit-username-group");
+    const editFullNameInput = document.getElementById("edit-full-name");
+    const editUsernameInput = document.getElementById("edit-username");
+    const editCloseBtn = document.getElementById("profile-edit-close");
+    const editCancelBtn = document.getElementById("profile-edit-cancel");
+    const courseList = document.getElementById("profile-course-list");
+    const coursesEyebrow = document.getElementById("courses-eyebrow");
+    const coursesLead = document.getElementById("courses-lead");
+    const chatContactTitle = document.getElementById("chat-contact-title");
+    const chatContactList = document.getElementById("chat-contact-list");
+    const chatActiveRole = document.getElementById("chat-active-role");
+    const chatActiveName = document.getElementById("chat-active-name");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatComposeForm = document.getElementById("chat-compose-form");
+    const chatMessageInput = document.getElementById("chat-message-input");
+    const chatSendBtn = document.getElementById("chat-send-btn");
+
+    let currentUser = null;
+    let currentProfile = {
+      fullName: "",
+      username: "",
+      email: "",
+      role: "student",
+      enrolledCourses: []
+    };
+    let currentEditMode = "all";
+    let activeChatContact = null;
+    let unsubscribeMessages = null;
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    }
+
+    function renderProfile() {
+      const fullName = currentProfile.fullName || "Student";
+      const username = currentProfile.username || "student";
+      const role = currentProfile.role || "student";
+      const initial = (fullName || username || "U").charAt(0).toUpperCase();
+
+      setText("dashboard-avatar", initial);
+      setText("dashboard-profile-circle", initial);
+      setText("sidebar-name", fullName);
+      setText("sidebar-role", `${role.charAt(0).toUpperCase()}${role.slice(1)} account`);
+      setText("profile-full-name", fullName);
+      setText("profile-username", username);
+      setText("profile-email", currentProfile.email || "");
+      setText("profile-role", role.charAt(0).toUpperCase() + role.slice(1));
+    }
+
+
+
+    function courseCardTemplate(course, actionLabel) {
+      const courseId = course.id || "beginner-thai-course";
+      const title = course.title || "Complete Beginner Thai Course";
+      const description = course.description || "Continue your Thai learning journey with structured chapters and lessons.";
+      const tag = currentProfile.role === "teacher" ? "Teacher course" : "Active course";
+
+      return `
+        <article class="course-dashboard-card clickable-course-card" data-course-id="${courseId}">
+          <div>
+            <span class="course-tag">${tag}</span>
+            <h2>${escapeHtml(title)}</h2>
+            <p>${escapeHtml(description)}</p>
+          </div>
+          <a href="course.html?id=${courseId}" class="btn">${actionLabel}</a>
+        </article>
+      `;
+    }
+
+    function renderCourseCards(courses = []) {
+      if (!courseList) return;
+
+      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
+      coursesEyebrow.textContent = isTeacher ? "Teacher area" : "Learning area";
+      coursesLead.textContent = isTeacher
+        ? "Open a course to edit its modules and text content."
+        : "Your enrolled course will appear here.";
+
+      const defaultCourse = {
+        id: "beginner-thai-course",
+        title: "Complete Beginner Thai Course",
+        description: "Continue your Thai learning journey with structured chapters, worksheets, and quizzes."
+      };
+
+      if (!isTeacher && !courses.length) {
+        coursesLead.textContent = "You have not joined any course yet.";
+        courseList.innerHTML = `
+          <button type="button" class="add-course-card" id="join-course-card">
+            <span>+</span>
+            <strong>Join Course</strong>
+            <small>Browse available courses and choose one to join.</small>
+          </button>
+        `;
+
+        document.getElementById("join-course-card").addEventListener("click", () => {
+          window.location.href = "join-course.html";
+        });
+        return;
+      }
+
+      const visibleCourses = isTeacher && !courses.length ? [defaultCourse] : courses;
+      courseList.innerHTML = visibleCourses
+        .map((course) => courseCardTemplate(course, isTeacher ? "Edit Course" : "Open Course"))
+        .join("");
+
+      if (isTeacher) {
+        courseList.insertAdjacentHTML("beforeend", `
+          <button type="button" class="add-course-card" id="add-course-card">
+            <span>+</span>
+            <strong>Add Course</strong>
+            <small>Create another course later.</small>
+          </button>
+        `);
+
+        document.getElementById("add-course-card").addEventListener("click", createNewCourse);
+      }
+
+      courseList.querySelectorAll(".clickable-course-card").forEach((card) => {
+        card.addEventListener("click", (event) => {
+          if (event.target.closest("a")) return;
+          window.location.href = `course.html?id=${card.dataset.courseId}`;
+        });
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+
+    function getChatTargetRoles() {
+      const role = currentProfile.role || "student";
+      if (role === "teacher" || role === "admin") return ["student"];
+      return ["teacher", "admin"];
+    }
+
+    function chatIdFor(userIdA, userIdB) {
+      return [userIdA, userIdB].sort().join("_");
+    }
+
+    function formatChatTime(value) {
+      if (!value || !value.toDate) return "Just now";
+      return value.toDate().toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function resetChatWindow(message = "Choose a contact to start chatting.") {
+      activeChatContact = null;
+      if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+      }
+      chatActiveRole.textContent = "Select a contact";
+      chatActiveName.textContent = "No conversation selected";
+      chatMessages.innerHTML = `<p class="chat-empty">${escapeHtml(message)}</p>`;
+      chatMessageInput.value = "";
+      chatMessageInput.disabled = true;
+      chatSendBtn.disabled = true;
+    }
+
+    function renderChatMessages(snapshot) {
+      if (!activeChatContact) return;
+
+      if (snapshot.empty) {
+        chatMessages.innerHTML = `<p class="chat-empty">No messages yet. Send the first message.</p>`;
+        return;
+      }
+
+      chatMessages.innerHTML = "";
+      snapshot.forEach((messageDoc) => {
+        const message = messageDoc.data();
+        const isMine = message.senderId === currentUser.uid;
+        const bubble = document.createElement("article");
+        bubble.className = `chat-message ${isMine ? "mine" : "theirs"}`;
+        bubble.innerHTML = `
+          <p>${escapeHtml(message.text || "")}</p>
+          <time>${formatChatTime(message.createdAt)}</time>
+        `;
+        chatMessages.appendChild(bubble);
+      });
+
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function openChatWith(contact) {
+      activeChatContact = contact;
+      chatContactList.querySelectorAll(".chat-contact-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.uid === contact.uid);
+      });
+
+      chatActiveRole.textContent = `${(contact.role || "user").charAt(0).toUpperCase()}${(contact.role || "user").slice(1)}`;
+      chatActiveName.textContent = contact.fullName || contact.username || contact.email || "User";
+      chatMessageInput.disabled = false;
+      chatSendBtn.disabled = false;
+      chatMessageInput.focus();
+      chatMessages.innerHTML = `<p class="chat-empty">Loading messages...</p>`;
+
+      if (unsubscribeMessages) unsubscribeMessages();
+
+      const chatId = chatIdFor(currentUser.uid, contact.uid);
+      const messagesQuery = query(
+        collection(db, "chats", chatId, "messages"),
+        orderBy("createdAt", "asc")
+      );
+
+      unsubscribeMessages = onSnapshot(messagesQuery, renderChatMessages, (error) => {
+        console.warn("Could not load chat messages:", error);
+        chatMessages.innerHTML = `<p class="chat-empty">Could not load messages.</p>`;
+      });
+    }
+
+    async function loadChatContacts() {
+      if (!chatContactList || !currentUser) return;
+
+      const targetRoles = getChatTargetRoles();
+      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
+      chatContactTitle.textContent = isTeacher ? "Students" : "Teachers";
+      chatContactList.innerHTML = `<p class="chat-empty">Loading contacts...</p>`;
+      resetChatWindow();
+
+      try {
+        const contacts = [];
+
+        for (const targetRole of targetRoles) {
+          const usersQuery = query(collection(db, "users"), where("role", "==", targetRole));
+          const usersSnap = await getDocs(usersQuery);
+
+          usersSnap.forEach((userDoc) => {
+            if (userDoc.id === currentUser.uid) return;
+            contacts.push({ uid: userDoc.id, ...userDoc.data() });
+          });
+        }
+
+        contacts.sort((a, b) => {
+          const nameA = (a.fullName || a.username || a.email || "").toLowerCase();
+          const nameB = (b.fullName || b.username || b.email || "").toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+        if (!contacts.length) {
+          chatContactList.innerHTML = `<p class="chat-empty">No ${isTeacher ? "students" : "teachers"} found.</p>`;
+          resetChatWindow(`No ${isTeacher ? "students" : "teachers"} available to message.`);
+          return;
+        }
+
+        chatContactList.innerHTML = "";
+        contacts.forEach((contact) => {
+          const name = contact.fullName || contact.username || contact.email || "User";
+          const detail = contact.email || contact.username || "";
+          const initial = name.charAt(0).toUpperCase();
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "chat-contact-button";
+          button.dataset.uid = contact.uid;
+          button.innerHTML = `
+            <span class="chat-contact-avatar">${escapeHtml(initial)}</span>
+            <span>
+              <strong>${escapeHtml(name)}</strong>
+              <small>${escapeHtml(detail)}</small>
+            </span>
+          `;
+          button.addEventListener("click", () => openChatWith(contact));
+          chatContactList.appendChild(button);
+        });
+      } catch (error) {
+        console.warn("Could not load chat contacts:", error);
+        chatContactList.innerHTML = `<p class="chat-empty">Could not load contacts.</p>`;
+      }
+    }
+
+    async function loadProfileCourses() {
+      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
+      const courses = [];
+
+      try {
+        if (isTeacher) {
+          const teacherCourseQuery = query(collection(db, "courses"), where("teacherId", "==", currentUser.uid));
+          const teacherCourses = await getDocs(teacherCourseQuery);
+
+          teacherCourses.forEach((courseDoc) => {
+            courses.push({ id: courseDoc.id, ...courseDoc.data() });
+          });
+        } else {
+          const enrolledCourseIds = Array.isArray(currentProfile.enrolledCourses)
+            ? currentProfile.enrolledCourses
+            : [];
+
+          for (const courseId of enrolledCourseIds) {
+            const courseSnap = await getDoc(doc(db, "courses", courseId));
+
+            if (courseSnap.exists()) {
+              courses.push({ id: courseSnap.id, ...courseSnap.data() });
+            } else if (courseId === "beginner-thai-course") {
+              courses.push({
+                id: "beginner-thai-course",
+                title: "Complete Beginner Thai Course",
+                description: "Continue your Thai learning journey with structured chapters, worksheets, and quizzes."
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("Could not load courses:", error);
+      }
+
+      renderCourseCards(courses);
+    }
+
+    async function createNewCourse() {
+      const title = prompt("Course title:");
+      if (!title) return;
+
+      try {
+        const courseRef = await addDoc(collection(db, "courses"), {
+          title: title.trim(),
+          description: "Add a short course description here.",
+          modules: [
+            {
+              title: "Module 1",
+              text: "Add the first module text here."
+            }
+          ],
+          teacherId: currentUser.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        window.location.href = `course.html?id=${courseRef.id}`;
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    function openEditForm(mode) {
+      currentEditMode = mode;
+      editForm.classList.add("active");
+      editFullNameInput.value = currentProfile.fullName || "";
+      editUsernameInput.value = currentProfile.username || "";
+
+      if (mode === "name") {
+        editTitle.textContent = "Edit name";
+        editNameGroup.style.display = "grid";
+        editUsernameGroup.style.display = "none";
+        editFullNameInput.focus();
+      } else if (mode === "username") {
+        editTitle.textContent = "Edit username";
+        editNameGroup.style.display = "none";
+        editUsernameGroup.style.display = "grid";
+        editUsernameInput.focus();
+      }
+    }
+
+    function closeEditForm() {
+      editForm.classList.remove("active");
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.tab;
+
+        tabs.forEach((item) => item.classList.remove("active"));
+        panels.forEach((panel) => panel.classList.remove("active"));
+
+        tab.classList.add("active");
+        document.getElementById(`${target}-panel`).classList.add("active");
+      });
+    });
+
+    editButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        openEditForm(button.dataset.edit);
+      });
+    });
+
+    editCloseBtn.addEventListener("click", closeEditForm);
+    editCancelBtn.addEventListener("click", closeEditForm);
+
+    chatComposeForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!currentUser || !activeChatContact) return;
+
+      const text = chatMessageInput.value.trim();
+      if (!text) return;
+
+      const allowedRoles = getChatTargetRoles();
+      if (!allowedRoles.includes(activeChatContact.role)) {
+        alert("You can only message the allowed role for your account.");
+        return;
+      }
+
+      chatMessageInput.value = "";
+      chatSendBtn.disabled = true;
+
+      try {
+        const chatId = chatIdFor(currentUser.uid, activeChatContact.uid);
+        const chatRef = doc(db, "chats", chatId);
+
+        await setDoc(chatRef, {
+          participants: [currentUser.uid, activeChatContact.uid],
+          participantRoles: {
+            [currentUser.uid]: currentProfile.role || "student",
+            [activeChatContact.uid]: activeChatContact.role || "student"
+          },
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        await addDoc(collection(db, "chats", chatId, "messages"), {
+          text,
+          senderId: currentUser.uid,
+          senderName: currentProfile.fullName || currentProfile.username || currentProfile.email || "User",
+          receiverId: activeChatContact.uid,
+          createdAt: serverTimestamp()
+        });
+      } catch (error) {
+        alert(error.message);
+        chatMessageInput.value = text;
+      } finally {
+        chatSendBtn.disabled = !activeChatContact;
+      }
+    });
+
+    editForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!currentUser) return;
+
+      const newFullName = editFullNameInput.value.trim();
+      const newUsername = editUsernameInput.value.trim();
+
+      if (currentEditMode === "name" && !newFullName) {
+        alert("Please enter your name.");
+        return;
+      }
+
+      if (currentEditMode === "username" && !newUsername) {
+        alert("Please enter your username.");
+        return;
+      }
+
+      if (currentEditMode === "username" && !/^[a-zA-Z0-9._-]+$/.test(newUsername)) {
+        alert("Username can only contain letters, numbers, dots, underscores, and hyphens.");
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const updates = {};
+
+        if (currentEditMode === "name") {
+          updates.fullName = newFullName;
+          await updateProfile(currentUser, { displayName: newFullName });
+        }
+
+        if (currentEditMode === "username") {
+          updates.username = newUsername;
+
+          if (currentUser.email && currentUser.email.endsWith("@thicha.com")) {
+            const newEmail = `${newUsername}@thicha.com`;
+            if (newEmail !== currentUser.email) {
+              await updateEmail(currentUser, newEmail);
+              updates.email = newEmail;
+            }
+          }
+        }
+
+        updates.updatedAt = serverTimestamp();
+
+        try {
+          await updateDoc(userRef, updates);
+        } catch (error) {
+          await setDoc(userRef, {
+            uid: currentUser.uid,
+            fullName: currentProfile.fullName || currentUser.displayName || "Student",
+            username: currentProfile.username || (currentUser.email ? currentUser.email.split("@")[0] : "student"),
+            email: currentUser.email || "",
+            role: currentProfile.role || "student",
+            createdAt: serverTimestamp(),
+            ...updates
+          });
+        }
+
+        currentProfile = {
+          ...currentProfile,
+          ...updates,
+          email: updates.email || currentUser.email || currentProfile.email
+        };
+
+        renderProfile();
+        closeEditForm();
+        alert("Profile updated successfully");
+      } catch (error) {
+        if (error.code === "auth/requires-recent-login") {
+          alert("Please log out and log in again before changing your username.");
+        } else {
+          alert(error.message);
+        }
+      }
+    });
+
+    logoutButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+          window.location.href = "index.html";
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      currentUser = user;
+
+      let fullName = user.displayName || "Student";
+      let username = user.email ? user.email.split("@")[0] : "student";
+      let email = user.email || "";
+      let role = "student";
+      let enrolledCourses = [];
+
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          fullName = data.fullName || fullName;
+          username = data.username || username;
+          email = data.email || email;
+          role = data.role || role;
+          enrolledCourses = Array.isArray(data.enrolledCourses) ? data.enrolledCourses : [];
+        }
+      } catch (error) {
+        console.warn("Could not load profile document:", error);
+      }
+
+      currentProfile = { fullName, username, email, role, enrolledCourses };
+      renderProfile();
+      await loadProfileCourses();
+      await loadChatContacts();
+    });
+  </script>
+</body>
+</html>

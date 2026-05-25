@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log In | Learn Thai Online</title>
+  <meta name="description" content="Log in page layout for the Thai course website." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-wrapper">
+      <div class="login-showcase">
+        <p class="eyebrow">Start learning today</p>
+        <h1>Ready to learn? Log in to continue your journey</h1>
+      </div>
+
+      <div class="login-form-area">
+        <div class="login-card">
+          <p class="eyebrow">Student Login</p>
+          <h2>Log in to your account</h2>
+
+          <form class="login-form">
+            <div class="form-group">
+              <label for="email">Username</label>
+              <input type="text" id="email" placeholder="Enter your username" />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Enter your password" />
+            </div>
+
+            <div class="login-options">
+              <label>
+                <input type="checkbox" />
+                Remember me
+              </label>
+
+              <a href="#">Forgot password?</a>
+            </div>
+
+            <button type="button" class="btn full-width">Log In</button>
+
+            <div class="login-divider">or continue with</div>
+
+            <div class="social-login">
+              <button type="button" class="social-btn">Continue with Google</button>
+            </div>
+          </form>
+
+          <p class="signup-text">
+            Don't have an account yet?
+            <a href="signup.html">Create account</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    async function createUserDocumentIfMissing(user, fallbackName = "User", fallbackUsername = "") {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        return;
+      }
+
+      const fullName = user.displayName || fallbackName;
+      const email = user.email || "";
+      const username = fallbackUsername || (email ? email.split("@")[0] : "");
+
+      await setDoc(userRef, {
+        uid: user.uid,
+        fullName: fullName,
+        username: username,
+        email: email,
+        role: "student",
+        createdAt: serverTimestamp()
+      });
+    }
+
+    // LOGIN BUTTON
+    const loginBtn = document.querySelector(".btn.full-width");
+
+    loginBtn.addEventListener("click", async () => {
+      const username = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const email = username + "@thicha.com"; 
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        await createUserDocumentIfMissing(userCredential.user, username, username);
+
+      alert("Login successful");
+
+      // redirect
+      window.location.href = "index.html";
+
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    // GOOGLE LOGIN
+    const googleBtn = document.querySelector(".social-btn");
+
+    googleBtn.addEventListener("click", async () => {
+      const provider = new GoogleAuthProvider();
+
+      try {
+        const userCredential = await signInWithPopup(auth, provider);
+        const user = userCredential.user;
+
+        await createUserDocumentIfMissing(
+          user,
+          user.displayName || (user.email ? user.email.split("@")[0] : "Google User")
+        );
+
+        alert("Google login successful");
+
+        window.location.href = "index.html";
+
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

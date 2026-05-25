@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learn Thai Online | Thai Course Homepage</title>
+  <meta name="description" content="A warm and friendly online Thai course landing page for beginners." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <header class="site-header" id="home">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a href="#home" class="logo" aria-label="Learn Thai Online home">
+        <span class="logo-mark">TH</span>
+        <span>Thicha</span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-menu">
+        <a href="#home">Home</a>
+        <a href="#course">Course</a>
+        <a href="#curriculum">Curriculum</a>
+        <a href="#benefits">Benefits</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+        <a href="#pricing" class="btn btn-small">Join Course</a>
+        <div class="auth-area">
+          <a href="login.html" class="btn btn-small btn-login" id="login-link">Log In</a>
+
+          <div class="user-menu" id="user-menu" style="display: none;">
+            <button type="button" class="btn btn-small btn-login" id="logout-btn">Log Out</button>
+            <div class="profile-circle" id="profile-circle" title="Profile"></div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero section-pad">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <p class="eyebrow">Online Thai course by</p>
+          <h1>Thicha</h1>
+          <p class="hero-text">Learn Thai step by step with friendly lessons, and simple exercises that help you speak Thai with confidence.</p>
+          <div class="hero-actions">
+            <a href="#pricing" class="btn">Join the Course</a>
+            <a href="#curriculum" class="btn btn-secondary">View Curriculum</a>
+          </div>
+          <div class="hero-stats" aria-label="Course highlights">
+            <div><strong>xx</strong><span>Chapters</span></div>
+            <div><strong>xx+</strong><span>Lessons</span></div>
+          </div>
+        </div>
+
+        <div class="hero-card" aria-label="Course preview card">
+          <div class="teacher-placeholder">
+            <img src="assets/teacher.jpg" alt="Teacher Thicha" class="teacher-photo">
+          </div>
+          <div style="display: none;">
+          <div class="preview-card floating-card top-card">
+            <strong>สวัสดี</strong>
+            <span>Hello / Greeting</span>
+          </div>
+          <div class="preview-card floating-card bottom-card">
+            <strong>Pronunciation</strong>
+            <span>Practice with simple sounds</span>
+          </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad" id="course">
+      <div class="container">
+        <div class="section-heading center">
+          <p class="eyebrow">Course introduction</p>
+          <h2>A calm, clear way to begin Thai</h2>
+          <p>This homepage introduces a beginner Thai course made for students who want a structured path, practical vocabulary, and friendly explanations without feeling overwhelmed.</p>
+        </div>
+
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="icon">🌱</div>
+            <h3>Beginner-friendly</h3>
+            <p>Start from basic greetings, tones, and everyday sentence patterns.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">🔊</div>
+            <h3>Phonetics</h3>
+            <p>Learn Thai sounds, tones, and pronunciation habits step by step.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">✅</div>
+            <h3>Quizzes</h3>
+            <p>Check your understanding after lessons with short interactive reviews.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">📄</div>
+            <h3>Worksheets</h3>
+            <p>Practice reading, vocabulary, and speaking prompts with guided worksheets.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad soft-section" id="curriculum">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Curriculum</p>
+          <h2>Simple chapters that build naturally</h2>
+          <p>Each chapter focuses on practical Thai for daily conversation, travel, and personal introductions.</p>
+        </div>
+
+        <div class="curriculum-grid">
+          <div class="curriculum-card">
+            <h3>Chapters 1–5</h3>
+            <ul>
+              <li><span>01</span> Thai greetings and polite particles</li>
+              <li><span>02</span> Tones, vowels, and pronunciation basics</li>
+              <li><span>03</span> Introducing yourself naturally</li>
+              <li><span>04</span> Numbers, time, and simple questions</li>
+              <li><span>05</span> Ordering food and drinks</li>
+            </ul>
+          </div>
+          <div class="curriculum-card">
+            <h3>Chapters 6–10</h3>
+            <ul>
+              <li><span>06</span> Shopping and asking for prices</li>
+              <li><span>07</span> Directions and transportation</li>
+              <li><span>08</span> Daily routine sentences</li>
+              <li><span>09</span> Reading useful Thai words</li>
+              <li><span>10</span> Speaking practice and final review</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad benefits-section" id="benefits">
+      <div class="container">
+        <div class="benefits-heading">
+          <h2>Why Learn Thai With Thicha</h2>
+        </div>
+
+        <div class="benefits-showcase">
+          <div class="benefit-point">
+            <div class="benefit-icon" aria-hidden="true">◎</div>
+            <div>
+              <h3>Enhance Your Everyday Experience</h3>
+              <p>Step-by-step lessons that build a solid Thai foundation and help you gain your speaking skill.</p>
+            </div>
+          </div>
+
+          <div class="benefit-point">
+            <div class="benefit-icon" aria-hidden="true">▣</div>
+            <div>
+              <h3>Learn Anytime, Anywhere</h3>
+              <p>Study Thai at your own pace, on your own schedule. Perfect if you’re busy or travel frequently.</p>
+            </div>
+          </div>
+
+          <div class="benefit-point">
+            <div class="benefit-icon" aria-hidden="true">☷</div>
+            <div>
+              <h3>Supportive Community</h3>
+              <p>Be part of a learning community that shares tips and real-life speaking practice to help you stay on track and improve your Thai.</p>
+            </div>
+          </div>
+
+          <div class="benefit-point">
+            <div class="benefit-icon" aria-hidden="true">◷</div>
+            <div>
+              <h3>Lifetime Access</h3>
+              <p>Access your course on any device and enjoy lifetime access to our user-friendly platform.</p>
+            </div>
+          </div>
+
+          <div class="benefit-point">
+            <div class="benefit-icon" aria-hidden="true">☑</div>
+            <div>
+              <h3>Interactive quizzes</h3>
+              <p>Check your understanding and track your progress.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="benefits-app-row">
+          <div class="app-logo-wrap">
+            <img src="assets/app-logo-placeholder.svg" alt="Thicha app logo placeholder" class="app-logo">
+            <div class="phone-placeholder" aria-hidden="true"></div>
+          </div>
+          <div class="app-copy">
+            <h3>Access Your Course on Mobile App</h3>
+            <p>Your course is available on our mobile app, simple, convenient, and perfect for learning Thai anytime, anywhere with the mobile app compatible with Android and iOS devices.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad soft-section" id="pricing">
+      <div class="container pricing-wrap">
+        <div class="section-heading center">
+          <p class="eyebrow">Pricing</p>
+          <h2>One simple course package</h2>
+        </div>
+
+        <article class="pricing-card">
+          <p class="pricing-label">Complete Beginner Thai Course</p>
+          <h3>$139</h3>
+          <p class="pricing-desc">A friendly course package designed for students who want clear lessons and practical Thai speaking skills.</p>
+          <ul>
+            <li>10 structured chapters</li>
+            <li>Video lesson placeholders</li>
+            <li>Worksheets and practice prompts</li>
+            <li>Quizzes after key lessons</li>
+            <li>Lifetime course access</li>
+            <li>Community support access</li>
+          </ul>
+          <a href="#contact" class="btn full-width">Buy Now</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-pad testimonials-section">
+      <div class="container">
+        <div class="section-heading center testimonials-heading">
+          <p class="eyebrow">Student stories</p>
+          <h2>Learners feel more confident</h2>
+        </div>
+      </div>
+
+      <div class="testimonial-feedback-marquee" aria-label="Sliding student feedback cards">
+        <div class="testimonial-feedback-track">
+          <article class="review-card">
+            <p>“The lessons feel very clear. I finally understand tones and can introduce myself in Thai.”</p>
+            <h3>Maya R.</h3>
+            <span>Beginner student</span>
+          </article>
+          <article class="review-card">
+            <p>“I like the worksheets because they make the vocabulary easier to remember after each lesson.”</p>
+            <h3>Daniel K.</h3>
+            <span>Travel learner</span>
+          </article>
+          <article class="review-card">
+            <p>“The structure is friendly and not stressful. It feels like learning with a patient teacher.”</p>
+            <h3>Sofia L.</h3>
+            <span>Online learner</span>
+          </article>
+          <article class="review-card">
+            <p>“The lessons feel very clear. I finally understand tones and can introduce myself in Thai.”</p>
+            <h3>Maya R.</h3>
+            <span>Beginner student</span>
+          </article>
+          <article class="review-card">
+            <p>“I like the worksheets because they make the vocabulary easier to remember after each lesson.”</p>
+            <h3>Daniel K.</h3>
+            <span>Travel learner</span>
+          </article>
+          <article class="review-card">
+            <p>“The structure is friendly and not stressful. It feels like learning with a patient teacher.”</p>
+            <h3>Sofia L.</h3>
+            <span>Online learner</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="testimonial-image-gallery" aria-label="Sliding student testimonial images">
+        <div class="testimonial-image-row testimonial-image-row-right" style="--slide-speed: 38s;">
+          <div class="testimonial-image-track">
+            <img src="assets/testimonials/1.png" alt="Student feedback screenshot 1" />
+            <img src="assets/testimonials/2.png" alt="Student feedback screenshot 2" />
+            <img src="assets/testimonials/3.png" alt="Student feedback screenshot 3" />
+            <img src="assets/testimonials/4.png" alt="Student feedback screenshot 4" />
+            <img src="assets/testimonials/5.png" alt="Student feedback screenshot 5" />
+            <img src="assets/testimonials/1.png" alt="Student feedback screenshot 1" />
+            <img src="assets/testimonials/2.png" alt="Student feedback screenshot 2" />
+            <img src="assets/testimonials/3.png" alt="Student feedback screenshot 3" />
+            <img src="assets/testimonials/4.png" alt="Student feedback screenshot 4" />
+            <img src="assets/testimonials/5.png" alt="Student feedback screenshot 5" />
+          </div>
+        </div>
+        <div class="testimonial-image-row testimonial-image-row-left" style="--slide-speed: 42s;">
+          <div class="testimonial-image-track">
+            <img src="assets/testimonials/6.png" alt="Student feedback screenshot 6" />
+            <img src="assets/testimonials/7.png" alt="Student feedback screenshot 7" />
+            <img src="assets/testimonials/8.png" alt="Student feedback screenshot 8" />
+            <img src="assets/testimonials/9.png" alt="Student feedback screenshot 9" />
+            <img src="assets/testimonials/10.png" alt="Student feedback screenshot 10" />
+            <img src="assets/testimonials/6.png" alt="Student feedback screenshot 6" />
+            <img src="assets/testimonials/7.png" alt="Student feedback screenshot 7" />
+            <img src="assets/testimonials/8.png" alt="Student feedback screenshot 8" />
+            <img src="assets/testimonials/9.png" alt="Student feedback screenshot 9" />
+            <img src="assets/testimonials/10.png" alt="Student feedback screenshot 10" />
+          </div>
+        </div>
+        <div class="testimonial-image-row testimonial-image-row-right" style="--slide-speed: 46s;">
+          <div class="testimonial-image-track">
+            <img src="assets/testimonials/11.png" alt="Student feedback screenshot 11" />
+            <img src="assets/testimonials/12.png" alt="Student feedback screenshot 12" />
+            <img src="assets/testimonials/13.png" alt="Student feedback screenshot 13" />
+            <img src="assets/testimonials/14.png" alt="Student feedback screenshot 14" />
+            <img src="assets/testimonials/15.png" alt="Student feedback screenshot 15" />
+            <img src="assets/testimonials/11.png" alt="Student feedback screenshot 11" />
+            <img src="assets/testimonials/12.png" alt="Student feedback screenshot 12" />
+            <img src="assets/testimonials/13.png" alt="Student feedback screenshot 13" />
+            <img src="assets/testimonials/14.png" alt="Student feedback screenshot 14" />
+            <img src="assets/testimonials/15.png" alt="Student feedback screenshot 15" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad soft-section" id="faq">
+      <div class="container faq-container">
+        <div class="section-heading center">
+          <p class="eyebrow">FAQ</p>
+          <h2>Common questions</h2>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <button class="faq-question">How can I pay?<span>+</span></button>
+            <div class="faq-answer"><p><strong>International:</strong> Credit Card (Stripe), WISE, or PayPal. 
+              <br><strong>Thai Bank Transfer:</strong> Email us at <strong>mildy.mono@gmail.com</strong> for details. </p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">No Thai background? No problem!<span>+</span></button>
+            <div class="faq-answer"><p>You can start from zero in both private classes and self-paced courses. Our 
+              curriculum follows a clear, step-by-step structure for all levels. </p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do you track my progress?<span>+</span></button>
+            <div class="faq-answer"><p><strong>End-of-Lesson:</strong> Short quizzes after every lesson. 
+              <br><strong>Milestone Tests:</strong> Every <strong>10 sessions</strong>, we conduct a progress review to 
+              assess your skills and refine your personalized learning plan. </p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Attendance & Rescheduling<span>+</span></button>
+            <div class="faq-answer"><p>You can reschedule a lesson up to <strong>2 times</strong>. 
+              <br><strong>Note:</strong> Cancellations must be made in advance. If you miss a class without 
+              notice within <strong>45 minutes</strong> of the start time, it will be counted as completed. </p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Community & Local Events<span>+</span></button>
+            <div class="faq-answer"><p>Join our <strong>WhatsApp group</strong> to connect with others! We also host <strong>monthly 
+              language exchanges</strong> for students in <strong>Chiang Mai, Pattaya, and Phitsanulok.</strong></p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Contact Us<span>+</span></button>
+            <div class="faq-answer"><p>More questions? Reach out anytime at <strong>mildy.mono@gmail.com</strong>. </p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-pad teacher-intro" id="course">
+      <div class="container teacher-intro-grid">
+        <div class="teacher-intro-visual" aria-label="Thai course material preview">
+          <img src="assets/Pic2.png" alt="Thai course materials preview" />
+        </div>
+
+        <div class="teacher-intro-content">
+          <p class="eyebrow">Course introduction</p>
+          <h2>Hello! I’m Thicha</h2>
+          <p>Hello! I’m Thicha from Chiang Mai, Thailand — a native Thai teacher with experience teaching students from many different countries, age groups, and language levels.</p>
+          <p>I began my teaching journey working in international school environments before moving into private tutoring and online Thai classes. Over the years, I’ve taught students from complete beginners to more advanced learners, always focusing on helping them build confidence in speaking and understanding Thai naturally step by step.</p>
+          <p>I hold a professional teaching certification, and my lessons are practical, friendly, and tailored to each student’s goals and learning style. Many of my students have found me through personal recommendations and word of mouth from learners around the world.</p>
+          <p>Beyond language, I also enjoy sharing Thai culture to make learning feel more natural, meaningful, and enjoyable. My goal is to create a supportive and comfortable environment where students can truly enjoy learning Thai with confidence.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta section-pad">
+      <div class="container final-cta-card">
+        <h2>Ready to Speak Thai?</h2>
+        <p>Start learning with a friendly course structure and take your first step toward real Thai conversation.</p>
+        <a href="#pricing" class="btn">Sign Up Today</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <p>© 2026 Learn Thai Online. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms and Conditions</a>
+        <a href="mailto:hello@example.com">hello@example.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginLink = document.getElementById("login-link");
+    const userMenu = document.getElementById("user-menu");
+    const profileCircle = document.getElementById("profile-circle");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginLink.style.display = "none";
+        userMenu.style.display = "flex";
+
+        const username = user.displayName || (user.email ? user.email.split("@")[0] : "User");
+        profileCircle.textContent = username.charAt(0).toUpperCase();
+        profileCircle.title = username;
+      } else {
+        loginLink.style.display = "inline-flex";
+        userMenu.style.display = "none";
+      }
+    });
+
+    profileCircle.addEventListener("click", () => {
+      window.location.href = "profile.html";
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        alert("Logged out successfully");
+        window.location.href = "index.html";
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  </script>
+
+  <script src="script.js"></script>
+</body>
+</html>

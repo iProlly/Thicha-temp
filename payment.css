@@ -1,0 +1,171 @@
+.payment-page {
+  min-height: calc(100vh - 78px);
+  padding: 56px 0 76px;
+  background:
+    radial-gradient(circle at top left, rgba(125, 151, 184, 0.20), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(193, 219, 232, 0.16), transparent 26%),
+    #edf3f9;
+}
+
+.payment-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-shell {
+  display: grid;
+  place-items: center;
+}
+
+.payment-card {
+  width: min(100%, 620px);
+  padding: 36px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(107, 70, 52, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.payment-card h1 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+}
+
+.payment-lead,
+.payment-note {
+  color: var(--muted);
+}
+
+.payment-lead {
+  margin: 16px 0 24px;
+}
+
+.payment-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  border-radius: 18px;
+  background: var(--cream-dark);
+}
+
+.payment-summary span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.payment-summary strong {
+  color: var(--brown);
+  font-size: 1.5rem;
+  text-align: right;
+}
+
+.payment-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(223, 232, 242, 0.72);
+}
+
+.payment-tab {
+  min-height: 46px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--soft-brown);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.payment-tab.active {
+  background: var(--white);
+  color: var(--brown);
+  box-shadow: var(--shadow-soft);
+}
+
+.payment-method-panel {
+  display: none;
+}
+
+.payment-method-panel.active {
+  display: block;
+}
+
+.stripe-panel {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(107, 70, 52, 0.08);
+}
+
+.stripe-panel h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0;
+}
+
+.stripe-panel p {
+  color: var(--muted);
+}
+
+.stripe-panel code {
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--cream-dark);
+  color: var(--brown);
+  font-weight: 800;
+}
+
+.payment-note {
+  margin-top: 18px;
+  font-size: 0.9rem;
+}
+
+.payment-status {
+  min-height: 26px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.payment-status.success {
+  color: #2f7d4f;
+}
+
+.payment-status.error {
+  color: #b43636;
+}
+
+.payment-warning {
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff3d8;
+  color: #7a4d00;
+  font-weight: 800;
+}
+
+#paypal-buttons {
+  min-height: 46px;
+}
+
+@media (max-width: 680px) {
+  .payment-card {
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .payment-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-header-actions .btn {
+    padding: 0 12px;
+  }
+}

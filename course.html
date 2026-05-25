@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course | Thicha</title>
+  <meta name="description" content="Course page and teacher course editor for Thicha." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="course.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Course navigation">
+      <a href="index.html" class="logo" aria-label="Thicha home">
+        <span class="logo-mark">TH</span>
+        <span>Thicha</span>
+      </a>
+      <div class="profile-header-actions">
+        <a href="profile.html" class="btn btn-small btn-login">Profile</a>
+        <a href="index.html" class="btn btn-small btn-login">Home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="course-page">
+    <section class="course-shell container">
+      <aside class="course-sidebar" id="course-sidebar">
+        <p class="eyebrow" id="course-sidebar-eyebrow">Course</p>
+        <h2 id="sidebar-course-title">Loading...</h2>
+        <p id="sidebar-course-description">Loading course details...</p>
+        <div class="module-nav" id="module-nav"></div>
+        <button type="button" class="add-module-sidebar-btn" id="add-module-sidebar-btn" style="display: none;">+ Add Module</button>
+      </aside>
+
+      <button type="button" class="course-sidebar-toggle" id="course-sidebar-toggle" aria-label="Hide course sidebar" aria-expanded="true">&lt;</button>
+
+      <section class="course-main">
+        <article class="course-main-card course-header-card">
+          <div class="course-topline">
+            <div>
+              <p class="eyebrow" id="course-mode-label">Course content</p>
+              <h1 id="course-title">Loading...</h1>
+            </div>
+          </div>
+          <p class="course-description" id="course-description"></p>
+        </article>
+
+        <article class="course-main-card course-module-card">
+          <div class="module-content-box" id="module-content-box">
+            <div id="module-view-area">
+              <div class="module-card-topline">
+                <h2 id="module-title">Select a module</h2>
+                <button type="button" class="btn" id="edit-module-btn" style="display: none;">Edit Module</button>
+              </div>
+              <div class="module-blocks-display" id="module-blocks-display">The module content will appear here.</div>
+            </div>
+
+            <form class="inline-module-editor" id="inline-module-editor">
+              <p class="eyebrow">Teacher editor</p>
+              <h2 id="module-editor-heading">Edit module</h2>
+
+              <div class="form-group">
+                <label for="edit-module-title">Module title</label>
+                <input type="text" id="edit-module-title" required />
+              </div>
+
+              <div class="content-block-editor-list" id="content-block-editor-list"></div>
+
+              <div class="quiz-question-editor" id="quiz-question-editor" hidden>
+                <div class="quiz-editor-topline">
+                  <div>
+                    <p class="eyebrow">Quiz builder</p>
+                    <h3>Questions</h3>
+                  </div>
+                  <button type="button" class="add-content-block-btn" id="add-quiz-question-btn">+ Add Question</button>
+                </div>
+                <div class="quiz-question-editor-list" id="quiz-question-editor-list"></div>
+              </div>
+
+              <div class="add-block-area">
+                <button type="button" class="add-content-block-btn" id="add-content-block-btn">+ Add Block</button>
+                <div class="block-type-menu" id="block-type-menu" hidden>
+                  <button type="button" data-block-type="text">Textbox</button>
+                  <button type="button" data-block-type="video">Add Video</button>
+                  <button type="button" data-block-type="image">Add Picture</button>
+                </div>
+              </div>
+
+              <div class="editor-actions module-editor-actions">
+                <button type="button" class="btn btn-secondary" id="delete-module-btn">Delete Module</button>
+                <button type="button" class="btn btn-secondary" id="cancel-inline-editor-btn">Cancel</button>
+                <button type="submit" class="btn">Save Module</button>
+              </div>
+            </form>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get("id") || "beginner-thai-course";
+
+    const editModuleBtn = document.getElementById("edit-module-btn");
+    const moduleViewArea = document.getElementById("module-view-area");
+    const inlineModuleEditor = document.getElementById("inline-module-editor");
+    const cancelInlineEditorBtn = document.getElementById("cancel-inline-editor-btn");
+    const blockEditorList = document.getElementById("content-block-editor-list");
+    const quizQuestionEditor = document.getElementById("quiz-question-editor");
+    const quizQuestionEditorList = document.getElementById("quiz-question-editor-list");
+    const addQuizQuestionBtn = document.getElementById("add-quiz-question-btn");
+    const addContentBlockBtn = document.getElementById("add-content-block-btn");
+    const blockTypeMenu = document.getElementById("block-type-menu");
+    const addModuleSidebarBtn = document.getElementById("add-module-sidebar-btn");
+    const deleteModuleBtn = document.getElementById("delete-module-btn");
+    const editorForm = document.getElementById("inline-module-editor");
+    const moduleNav = document.getElementById("module-nav");
+    const courseShell = document.querySelector(".course-shell");
+    const sidebarToggle = document.getElementById("course-sidebar-toggle");
+
+    let currentUser = null;
+    let currentRole = "student";
+    let currentCourse = {
+      title: "Complete Beginner Thai Course",
+      description: "A structured beginner course for learning Thai step by step.",
+      modules: [
+        {
+          title: "Module 1: Introduction",
+          text: "Add your first course text here.",
+          blocks: [{ type: "text", value: "Add your first course text here." }],
+          submodules: []
+        }
+      ]
+    };
+    let selectedModuleIndex = 0;
+    let selectedSubmoduleIndex = null;
+    let expandedModules = new Set([0]);
+    let isSidebarCollapsed = false;
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) element.textContent = value;
+    }
+
+    function canEditCourse() {
+      return currentRole === "teacher" || currentRole === "admin";
+    }
+
+    function normalizeBlocks(item) {
+      if (Array.isArray(item?.blocks)) {
+        return item.blocks
+          .filter((block) => block && ["text", "video", "image"].includes(block.type))
+          .map((block) => ({
+            type: block.type,
+            value: block.value || block.url || ""
+          }));
+      }
+
+      if (item?.text) {
+        return [{ type: "text", value: item.text }];
+      }
+
+      return [];
+    }
+
+    function legacyTextFromBlocks(blocks) {
+      return (blocks || [])
+        .filter((block) => block.type === "text" && block.value)
+        .map((block) => block.value)
+        .join("\n\n");
+    }
+
+    function normalizeQuestions(item) {
+      if (!Array.isArray(item?.questions)) return [];
+
+      return item.questions.map((question, index) => {
+        const type = question?.type === "written" ? "written" : "mcq";
+        const options = Array.isArray(question?.options)
+          ? question.options.map((option) => ({
+              text: option?.text || "",
+              correct: Boolean(option?.correct)
+            }))
+          : [];
+
+        return {
+          type,
+          prompt: question?.prompt || `Question ${index + 1}`,
+          options: type === "mcq" ? (options.length ? options : [
+            { text: "Option 1", correct: true },
+            { text: "Option 2", correct: false }
+          ]) : []
+        };
+      });
+    }
+
+    function itemKind(item) {
+      return item?.kind === "quiz" ? "quiz" : "lesson";
+    }
+
+    function shuffleArray(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function normalizeCourse() {
+      if (!Array.isArray(currentCourse.modules)) currentCourse.modules = [];
+      currentCourse.modules = currentCourse.modules.map((module, index) => {
+        const moduleBlocks = normalizeBlocks(module);
+
+        return {
+          title: module?.title || `Module ${index + 1}`,
+          kind: "lesson",
+          text: module?.text || legacyTextFromBlocks(moduleBlocks),
+          blocks: moduleBlocks,
+          submodules: Array.isArray(module?.submodules)
+            ? module.submodules.map((submodule, subIndex) => {
+                const kind = itemKind(submodule);
+                const submoduleBlocks = normalizeBlocks(submodule);
+
+                return {
+                  title: submodule?.title || `${kind === "quiz" ? "Quiz" : "Submodule"} ${subIndex + 1}`,
+                  kind,
+                  text: submodule?.text || legacyTextFromBlocks(submoduleBlocks),
+                  blocks: kind === "quiz" ? [] : submoduleBlocks,
+                  questions: kind === "quiz" ? normalizeQuestions(submodule) : []
+                };
+              })
+            : []
+        };
+      });
+    }
+
+    function getSelectedItem() {
+      const module = currentCourse.modules?.[selectedModuleIndex];
+      if (!module) return null;
+
+      if (selectedSubmoduleIndex === null) {
+        return {
+          type: "module",
+          item: module,
+          module,
+          label: "Module",
+          titleFallback: `Module ${selectedModuleIndex + 1}`
+        };
+      }
+
+      const submodule = module.submodules?.[selectedSubmoduleIndex];
+      if (!submodule) return null;
+
+      return {
+        type: "submodule",
+        item: submodule,
+        module,
+        label: "Submodule",
+        titleFallback: `Submodule ${selectedSubmoduleIndex + 1}`
+      };
+    }
+
+    function selectModule(index) {
+      selectedModuleIndex = index;
+      selectedSubmoduleIndex = null;
+      closeInlineEditor();
+      renderCourse();
+    }
+
+    function selectSubmodule(moduleIndex, submoduleIndex) {
+      selectedModuleIndex = moduleIndex;
+      selectedSubmoduleIndex = submoduleIndex;
+      expandedModules.add(moduleIndex);
+      closeInlineEditor();
+      renderCourse();
+    }
+
+    function renderCourse() {
+      normalizeCourse();
+      setText("course-title", currentCourse.title || "Untitled course");
+      setText("sidebar-course-title", currentCourse.title || "Untitled course");
+      setText("course-description", currentCourse.description || "");
+      setText("sidebar-course-description", currentCourse.description || "");
+      setText("course-mode-label", canEditCourse() ? "Teacher course view" : "Course content");
+
+      addModuleSidebarBtn.style.display = canEditCourse() ? "inline-flex" : "none";
+      editModuleBtn.style.display = canEditCourse() && getSelectedItem() ? "inline-flex" : "none";
+      const selected = getSelectedItem();
+      editModuleBtn.textContent = selected?.item.kind === "quiz" ? "Edit Quiz" : (selectedSubmoduleIndex === null ? "Edit Module" : "Edit Submodule");
+      renderModuleNav();
+      renderSelectedContent();
+    }
+
+    function renderModuleNav() {
+      moduleNav.innerHTML = "";
+      const modules = currentCourse.modules || [];
+
+      if (!modules.length) {
+        moduleNav.innerHTML = '<div class="empty-course-state">No modules yet.</div>';
+        return;
+      }
+
+      modules.forEach((module, index) => {
+        const moduleWrap = document.createElement("div");
+        moduleWrap.className = "module-nav-item";
+        moduleWrap.classList.toggle("active", index === selectedModuleIndex && selectedSubmoduleIndex === null);
+
+        const moduleRow = document.createElement("div");
+        moduleRow.className = "module-nav-row";
+
+        const moduleButton = document.createElement("button");
+        moduleButton.type = "button";
+        moduleButton.className = "module-title-btn";
+        moduleButton.textContent = module.title || `Module ${index + 1}`;
+        moduleButton.addEventListener("click", () => selectModule(index));
+
+        const expandButton = document.createElement("button");
+        expandButton.type = "button";
+        expandButton.className = "module-expand-btn";
+        expandButton.textContent = expandedModules.has(index) ? "⌃" : "⌄";
+        expandButton.setAttribute("aria-label", expandedModules.has(index) ? "Hide submodules" : "Show submodules");
+        expandButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (expandedModules.has(index)) {
+            expandedModules.delete(index);
+          } else {
+            expandedModules.add(index);
+          }
+          renderModuleNav();
+        });
+
+        moduleRow.append(moduleButton, expandButton);
+        moduleWrap.appendChild(moduleRow);
+
+        if (expandedModules.has(index)) {
+          const submoduleList = document.createElement("div");
+          submoduleList.className = "submodule-list";
+
+          if (module.submodules.length) {
+            module.submodules.forEach((submodule, subIndex) => {
+              const subButton = document.createElement("button");
+              subButton.type = "button";
+              subButton.className = "submodule-btn";
+              subButton.textContent = `${submodule.kind === "quiz" ? "Quiz: " : ""}${submodule.title || `Submodule ${subIndex + 1}`}`;
+              subButton.classList.toggle("active", index === selectedModuleIndex && subIndex === selectedSubmoduleIndex);
+              subButton.addEventListener("click", () => selectSubmodule(index, subIndex));
+              submoduleList.appendChild(subButton);
+            });
+          } else {
+            const emptyState = document.createElement("div");
+            emptyState.className = "empty-submodule-state";
+            emptyState.textContent = "No submodules yet.";
+            submoduleList.appendChild(emptyState);
+          }
+
+          if (canEditCourse()) {
+            const addChoiceWrap = document.createElement("div");
+            addChoiceWrap.className = "submodule-add-choice";
+
+            const addSubmoduleButton = document.createElement("button");
+            addSubmoduleButton.type = "button";
+            addSubmoduleButton.className = "add-submodule-btn";
+            addSubmoduleButton.textContent = "+ Normal Submodule";
+            addSubmoduleButton.addEventListener("click", () => addSubmodule(index));
+
+            const addQuizButton = document.createElement("button");
+            addQuizButton.type = "button";
+            addQuizButton.className = "add-submodule-btn";
+            addQuizButton.textContent = "+ Quiz";
+            addQuizButton.addEventListener("click", () => addQuizSubmodule(index));
+
+            addChoiceWrap.append(addSubmoduleButton, addQuizButton);
+            submoduleList.appendChild(addChoiceWrap);
+          }
+
+          moduleWrap.appendChild(submoduleList);
+        }
+
+        moduleNav.appendChild(moduleWrap);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function plainTextToHtml(value) {
+      return escapeHtml(value || "").replace(/\n/g, "<br>");
+    }
+
+    function sanitizeRichText(html) {
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = html || "";
+
+      const allowedTags = new Set(["B", "STRONG", "I", "EM", "U", "BR", "P", "DIV", "UL", "OL", "LI", "H3", "H4", "SPAN"]);
+      const allowedStyles = new Set(["font-weight", "font-style", "text-decoration"]);
+
+      function cleanNode(node) {
+        Array.from(node.childNodes).forEach((child) => {
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            if (!allowedTags.has(child.tagName)) {
+              const fragment = document.createDocumentFragment();
+              while (child.firstChild) fragment.appendChild(child.firstChild);
+              child.replaceWith(fragment);
+              cleanNode(node);
+              return;
+            }
+
+            Array.from(child.attributes).forEach((attr) => {
+              if (attr.name !== "style") {
+                child.removeAttribute(attr.name);
+                return;
+              }
+
+              const kept = [];
+              child.getAttribute("style").split(";").forEach((rule) => {
+                const [property, value] = rule.split(":").map((part) => part && part.trim());
+                if (property && value && allowedStyles.has(property.toLowerCase())) {
+                  kept.push(`${property}: ${value}`);
+                }
+              });
+
+              if (kept.length) child.setAttribute("style", kept.join("; "));
+              else child.removeAttribute("style");
+            });
+
+            cleanNode(child);
+          }
+        });
+      }
+
+      cleanNode(wrapper);
+      return wrapper.innerHTML.trim();
+    }
+
+    function isProbablyPlainText(value) {
+      return value && !/[<][a-zA-Z][\s\S]*[>]/.test(value);
+    }
+
+    function normalizeVideoUrl(url) {
+      const rawUrl = String(url || "").trim();
+      if (!rawUrl) return "";
+
+      try {
+        const parsedUrl = new URL(rawUrl);
+        const hostname = parsedUrl.hostname.replace(/^www\./, "");
+
+        if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+          if (parsedUrl.pathname === "/watch") {
+            const videoId = parsedUrl.searchParams.get("v");
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : rawUrl;
+          }
+
+          if (parsedUrl.pathname.startsWith("/shorts/")) {
+            const videoId = parsedUrl.pathname.split("/")[2];
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : rawUrl;
+          }
+
+          if (parsedUrl.pathname.startsWith("/embed/")) {
+            const videoId = parsedUrl.pathname.split("/")[2];
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : rawUrl;
+          }
+        }
+
+        if (hostname === "youtu.be") {
+          const videoId = parsedUrl.pathname.replace("/", "").split("?")[0];
+          return videoId ? `https://www.youtube.com/embed/${videoId}` : rawUrl;
+        }
+      } catch (error) {
+        return rawUrl;
+      }
+
+      return rawUrl;
+    }
+
+    function renderBlockView(block) {
+      const value = block.value || "";
+
+      if (block.type === "video") {
+        const videoUrl = normalizeVideoUrl(value);
+        if (!videoUrl) return '<div class="empty-block-state">No video URL added yet.</div>';
+        return `<div class="content-video-block"><iframe src="${escapeHtml(videoUrl)}" title="Video lesson" allowfullscreen></iframe></div>`;
+      }
+
+      if (block.type === "image") {
+        if (!value) return '<div class="empty-block-state">No picture URL added yet.</div>';
+        return `<div class="content-image-block"><img src="${escapeHtml(value)}" alt="Course content image" /></div>`;
+      }
+
+      const richText = isProbablyPlainText(value) ? plainTextToHtml(value || "Empty textbox.") : sanitizeRichText(value || "Empty textbox.");
+      return `<div class="module-text-display rich-text-display">${richText}</div>`;
+    }
+
+    function renderQuizStudentView(quiz) {
+      const questions = normalizeQuestions(quiz);
+      if (!questions.length) {
+        return '<div class="empty-block-state">No quiz questions added yet.</div>';
+      }
+
+      const shuffled = shuffleArray(questions.map((question, index) => ({ ...question, originalIndex: index })));
+      const questionsHtml = shuffled.map((question, displayIndex) => {
+        const name = `quiz-q-${question.originalIndex}`;
+        const prompt = `<h3>${displayIndex + 1}. ${escapeHtml(question.prompt)}</h3>`;
+
+        if (question.type === "written") {
+          return `<div class="quiz-question" data-question-index="${question.originalIndex}" data-question-type="written">${prompt}<textarea class="quiz-written-answer" name="${name}" placeholder="Write your answer here..."></textarea></div>`;
+        }
+
+        const optionsHtml = question.options.map((option, optionIndex) => `
+          <label class="quiz-option">
+            <input type="checkbox" name="${name}" value="${optionIndex}">
+            <span>${escapeHtml(option.text || `Option ${optionIndex + 1}`)}</span>
+          </label>
+        `).join("");
+
+        return `<div class="quiz-question" data-question-index="${question.originalIndex}" data-question-type="mcq">${prompt}<div class="quiz-options">${optionsHtml}</div></div>`;
+      }).join("");
+
+      return `
+        <form class="student-quiz" id="student-quiz-form">
+          ${questionsHtml}
+          <button type="submit" class="btn">Submit Quiz</button>
+          <div class="quiz-result" id="quiz-result" aria-live="polite"></div>
+        </form>
+      `;
+    }
+
+    function bindStudentQuizSubmit(quiz) {
+      const quizForm = document.getElementById("student-quiz-form");
+      if (!quizForm) return;
+
+      quizForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const questions = normalizeQuestions(quiz);
+        let gradedCount = 0;
+        let correctCount = 0;
+
+        questions.forEach((question, questionIndex) => {
+          if (question.type !== "mcq") return;
+          gradedCount += 1;
+          const checked = Array.from(quizForm.querySelectorAll(`input[name="quiz-q-${questionIndex}"]:checked`)).map((input) => Number(input.value));
+          const correct = question.options
+            .map((option, optionIndex) => option.correct ? optionIndex : null)
+            .filter((optionIndex) => optionIndex !== null);
+
+          const sameLength = checked.length === correct.length;
+          const sameValues = correct.every((optionIndex) => checked.includes(optionIndex));
+          if (sameLength && sameValues) correctCount += 1;
+        });
+
+        const result = document.getElementById("quiz-result");
+        if (result) {
+          result.textContent = gradedCount
+            ? `Submitted. MCQ score: ${correctCount}/${gradedCount}. Written answers were submitted for review.`
+            : "Submitted. Written answers were submitted for review.";
+        }
+      });
+    }
+
+    function renderSelectedContent() {
+      const selected = getSelectedItem();
+      const blocksDisplay = document.getElementById("module-blocks-display");
+
+      if (!selected) {
+        setText("module-title", "No module selected");
+        blocksDisplay.innerHTML = canEditCourse()
+          ? "Use + Add Module in the sidebar to create a module."
+          : "This course does not have module content yet.";
+        return;
+      }
+
+      setText("module-title", selected.item.title || selected.titleFallback);
+
+      if (selected.item.kind === "quiz") {
+        blocksDisplay.innerHTML = renderQuizStudentView(selected.item);
+        bindStudentQuizSubmit(selected.item);
+        return;
+      }
+
+      const blocks = normalizeBlocks(selected.item);
+      if (!blocks.length) {
+        blocksDisplay.innerHTML = `<div class="empty-block-state">No ${selected.label.toLowerCase()} content added yet.</div>`;
+        return;
+      }
+
+      blocksDisplay.innerHTML = blocks.map(renderBlockView).join("");
+    }
+
+    function renderModuleEditor() {
+      const selected = getSelectedItem();
+
+      if (!selected) {
+        closeInlineEditor();
+        return;
+      }
+
+      const isQuiz = selected.item.kind === "quiz";
+      setText("module-editor-heading", `Edit ${selected.item.title || selected.titleFallback}`);
+      document.querySelector('label[for="edit-module-title"]').textContent = `${isQuiz ? "Quiz" : selected.label} title`;
+      document.getElementById("edit-module-title").value = selected.item.title || selected.titleFallback;
+
+      blockEditorList.hidden = isQuiz;
+      document.querySelector(".add-block-area").hidden = isQuiz;
+      quizQuestionEditor.hidden = !isQuiz;
+
+      if (isQuiz) {
+        renderQuestionEditor(normalizeQuestions(selected.item));
+      } else {
+        renderBlockEditor(normalizeBlocks(selected.item));
+      }
+
+      deleteModuleBtn.textContent = `Delete ${isQuiz ? "Quiz" : selected.label}`;
+      deleteModuleBtn.style.display = "inline-flex";
+    }
+
+    function blockLabel(type) {
+      if (type === "video") return "Video URL";
+      if (type === "image") return "Picture URL";
+      return "Textbox";
+    }
+
+    function renderBlockEditor(blocks = []) {
+      blockEditorList.innerHTML = "";
+
+      if (!blocks.length) {
+        blocks = [{ type: "text", value: "" }];
+      }
+
+      blocks.forEach((block) => addBlockEditor(block.type, block.value));
+    }
+
+    function addBlockEditor(type, value = "") {
+      const block = document.createElement("div");
+      block.className = "content-block-editor";
+      block.dataset.blockType = type;
+
+      const header = document.createElement("div");
+      header.className = "content-block-editor-header";
+
+      const label = document.createElement("strong");
+      label.textContent = blockLabel(type);
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "remove-content-block-btn";
+      removeButton.textContent = "Remove";
+      removeButton.addEventListener("click", () => block.remove());
+
+      header.append(label, removeButton);
+      block.appendChild(header);
+
+      if (type === "text") {
+        const toolbar = document.createElement("div");
+        toolbar.className = "rich-text-toolbar";
+
+        const tools = [
+          { command: "bold", label: "B", title: "Bold" },
+          { command: "italic", label: "I", title: "Italic" },
+          { command: "underline", label: "U", title: "Underline" },
+          { command: "insertUnorderedList", label: "• List", title: "Bullet list" },
+          { command: "formatBlock", value: "h3", label: "H", title: "Heading" },
+          { command: "formatBlock", value: "div", label: "Normal", title: "Normal text" }
+        ];
+
+        const editor = document.createElement("div");
+        editor.className = "content-block-input rich-text-input";
+        editor.contentEditable = "true";
+        editor.dataset.placeholder = "Add text here...";
+        editor.innerHTML = isProbablyPlainText(value) ? plainTextToHtml(value) : sanitizeRichText(value || "");
+
+        tools.forEach((tool) => {
+          const toolButton = document.createElement("button");
+          toolButton.type = "button";
+          toolButton.className = "rich-text-tool-btn";
+          toolButton.textContent = tool.label;
+          toolButton.title = tool.title;
+          toolButton.addEventListener("click", () => {
+            editor.focus();
+            document.execCommand(tool.command, false, tool.value || null);
+          });
+          toolbar.appendChild(toolButton);
+        });
+
+        block.append(toolbar, editor);
+      } else {
+        const input = document.createElement("input");
+        input.type = "url";
+        input.className = "content-block-input";
+        input.placeholder = type === "video" ? "Paste video URL here..." : "Paste picture URL here...";
+        input.value = type === "video" ? normalizeVideoUrl(value) : (value || "");
+        if (type === "video") {
+          input.addEventListener("blur", () => {
+            input.value = normalizeVideoUrl(input.value);
+          });
+        }
+        block.appendChild(input);
+      }
+
+      blockEditorList.appendChild(block);
+    }
+
+    function renderQuestionEditor(questions = []) {
+      quizQuestionEditorList.innerHTML = "";
+      if (!questions.length) {
+        questions = [{ type: "mcq", prompt: "", options: [{ text: "", correct: true }, { text: "", correct: false }] }];
+      }
+      questions.forEach((question) => addQuestionEditor(question));
+    }
+
+    function addQuestionEditor(question = { type: "mcq", prompt: "", options: [] }) {
+      const card = document.createElement("div");
+      card.className = "quiz-question-editor-card";
+
+      const header = document.createElement("div");
+      header.className = "quiz-question-editor-header";
+
+      const typeSelect = document.createElement("select");
+      typeSelect.className = "quiz-question-type";
+      typeSelect.innerHTML = '<option value="mcq">MCQ</option><option value="written">Written question</option>';
+      typeSelect.value = question.type === "written" ? "written" : "mcq";
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "remove-content-block-btn";
+      removeButton.textContent = "Remove Question";
+      removeButton.addEventListener("click", () => card.remove());
+
+      header.append(typeSelect, removeButton);
+
+      const promptInput = document.createElement("textarea");
+      promptInput.className = "quiz-question-prompt";
+      promptInput.placeholder = "Question text...";
+      promptInput.value = question.prompt || "";
+
+      const optionsBox = document.createElement("div");
+      optionsBox.className = "quiz-option-editor-list";
+
+      const addOptionButton = document.createElement("button");
+      addOptionButton.type = "button";
+      addOptionButton.className = "add-content-block-btn quiz-add-option-btn";
+      addOptionButton.textContent = "+ Add Option";
+      addOptionButton.addEventListener("click", () => addOptionEditor(optionsBox, { text: "", correct: false }));
+
+      function syncType() {
+        const isMcq = typeSelect.value === "mcq";
+        optionsBox.hidden = !isMcq;
+        addOptionButton.hidden = !isMcq;
+        if (isMcq && !optionsBox.children.length) {
+          addOptionEditor(optionsBox, { text: "", correct: true });
+          addOptionEditor(optionsBox, { text: "", correct: false });
+        }
+      }
+
+      typeSelect.addEventListener("change", syncType);
+      (question.options?.length ? question.options : [{ text: "", correct: true }, { text: "", correct: false }]).forEach((option) => addOptionEditor(optionsBox, option));
+
+      card.append(header, promptInput, optionsBox, addOptionButton);
+      quizQuestionEditorList.appendChild(card);
+      syncType();
+    }
+
+    function addOptionEditor(optionsBox, option = { text: "", correct: false }) {
+      const row = document.createElement("div");
+      row.className = "quiz-option-editor-row";
+
+      const correctLabel = document.createElement("label");
+      correctLabel.className = "quiz-correct-toggle";
+      const correctInput = document.createElement("input");
+      correctInput.type = "checkbox";
+      correctInput.className = "quiz-option-correct";
+      correctInput.checked = Boolean(option.correct);
+      correctLabel.append(correctInput, document.createTextNode("Correct"));
+
+      const textInput = document.createElement("input");
+      textInput.type = "text";
+      textInput.className = "quiz-option-text";
+      textInput.placeholder = "Option text...";
+      textInput.value = option.text || "";
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "remove-content-block-btn";
+      removeButton.textContent = "Remove";
+      removeButton.addEventListener("click", () => row.remove());
+
+      row.append(correctLabel, textInput, removeButton);
+      optionsBox.appendChild(row);
+    }
+
+    function collectQuizQuestions() {
+      return Array.from(quizQuestionEditorList.querySelectorAll(".quiz-question-editor-card"))
+        .map((card) => {
+          const type = card.querySelector(".quiz-question-type")?.value === "written" ? "written" : "mcq";
+          const prompt = card.querySelector(".quiz-question-prompt")?.value.trim() || "";
+          const options = Array.from(card.querySelectorAll(".quiz-option-editor-row"))
+            .map((row) => ({
+              text: row.querySelector(".quiz-option-text")?.value.trim() || "",
+              correct: Boolean(row.querySelector(".quiz-option-correct")?.checked)
+            }))
+            .filter((option) => option.text);
+
+          return { type, prompt, options: type === "mcq" ? options : [] };
+        })
+        .filter((question) => question.prompt && (question.type === "written" || question.options.length >= 2));
+    }
+
+    function collectEditorBlocks() {
+      return Array.from(blockEditorList.querySelectorAll(".content-block-editor"))
+        .map((block) => {
+          const type = block.dataset.blockType;
+          const input = block.querySelector(".content-block-input");
+          const inputValue = type === "text"
+            ? sanitizeRichText(input?.innerHTML || "")
+            : (input?.value.trim() || "");
+          return {
+            type,
+            value: type === "video" ? normalizeVideoUrl(inputValue) : inputValue
+          };
+        })
+        .filter((block) => block.type && block.value);
+    }
+
+    function openInlineEditor() {
+      if (!canEditCourse()) return;
+      renderModuleEditor();
+      moduleViewArea.style.display = "none";
+      inlineModuleEditor.classList.add("active");
+      document.getElementById("edit-module-title").focus();
+    }
+
+    function closeInlineEditor() {
+      moduleViewArea.style.display = "block";
+      inlineModuleEditor.classList.remove("active");
+    }
+
+    async function saveCourseModules() {
+      const courseRef = doc(db, "courses", courseId);
+      normalizeCourse();
+
+      try {
+        await updateDoc(courseRef, {
+          modules: currentCourse.modules || [],
+          teacherId: currentCourse.teacherId || currentUser.uid,
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        await setDoc(courseRef, {
+          title: currentCourse.title || "Complete Beginner Thai Course",
+          description: currentCourse.description || "A structured beginner course for learning Thai step by step.",
+          modules: currentCourse.modules || [],
+          teacherId: currentUser.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+
+    async function loadCourse() {
+      const courseRef = doc(db, "courses", courseId);
+      const courseSnap = await getDoc(courseRef);
+
+      if (courseSnap.exists()) {
+        currentCourse = { id: courseSnap.id, ...courseSnap.data() };
+      } else if (canEditCourse()) {
+        await setDoc(courseRef, {
+          title: currentCourse.title,
+          description: currentCourse.description,
+          modules: currentCourse.modules,
+          teacherId: currentUser.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      normalizeCourse();
+      selectedModuleIndex = Math.min(selectedModuleIndex, Math.max(0, currentCourse.modules.length - 1));
+      const selectedModule = currentCourse.modules[selectedModuleIndex];
+      if (!selectedModule || selectedSubmoduleIndex === null || !selectedModule.submodules[selectedSubmoduleIndex]) {
+        selectedSubmoduleIndex = null;
+      }
+      renderCourse();
+      renderModuleEditor();
+    }
+
+    editModuleBtn.addEventListener("click", openInlineEditor);
+
+    cancelInlineEditorBtn.addEventListener("click", () => {
+      closeInlineEditor();
+      renderSelectedContent();
+    });
+
+    addContentBlockBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      blockTypeMenu.hidden = !blockTypeMenu.hidden;
+    });
+
+    blockTypeMenu.querySelectorAll("[data-block-type]").forEach((button) => {
+      button.addEventListener("click", () => {
+        addBlockEditor(button.dataset.blockType, "");
+        blockTypeMenu.hidden = true;
+      });
+    });
+
+    addQuizQuestionBtn.addEventListener("click", () => {
+      addQuestionEditor({ type: "mcq", prompt: "", options: [{ text: "", correct: true }, { text: "", correct: false }] });
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".add-block-area")) {
+        blockTypeMenu.hidden = true;
+      }
+    });
+
+    addModuleSidebarBtn.addEventListener("click", async () => {
+      if (!canEditCourse()) return;
+
+      currentCourse.modules = currentCourse.modules || [];
+      currentCourse.modules.push({
+        title: `Module ${currentCourse.modules.length + 1}`,
+        text: "",
+        blocks: [{ type: "text", value: "" }],
+        submodules: []
+      });
+      selectedModuleIndex = currentCourse.modules.length - 1;
+      selectedSubmoduleIndex = null;
+      expandedModules.add(selectedModuleIndex);
+
+      await saveCourseModules();
+      renderCourse();
+      openInlineEditor();
+    });
+
+    async function addSubmodule(moduleIndex) {
+      if (!canEditCourse()) return;
+
+      const module = currentCourse.modules[moduleIndex];
+      if (!module) return;
+
+      module.submodules = module.submodules || [];
+      module.submodules.push({
+        title: `Submodule ${module.submodules.length + 1}`,
+        kind: "lesson",
+        text: "",
+        blocks: [{ type: "text", value: "" }]
+      });
+      selectedModuleIndex = moduleIndex;
+      selectedSubmoduleIndex = module.submodules.length - 1;
+      expandedModules.add(moduleIndex);
+
+      await saveCourseModules();
+      renderCourse();
+      openInlineEditor();
+    }
+
+    async function addQuizSubmodule(moduleIndex) {
+      if (!canEditCourse()) return;
+
+      const module = currentCourse.modules[moduleIndex];
+      if (!module) return;
+
+      module.submodules = module.submodules || [];
+      module.submodules.push({
+        title: `Quiz ${module.submodules.length + 1}`,
+        kind: "quiz",
+        questions: [
+          {
+            type: "mcq",
+            prompt: "Add your first question here.",
+            options: [
+              { text: "Option 1", correct: true },
+              { text: "Option 2", correct: false }
+            ]
+          }
+        ]
+      });
+      selectedModuleIndex = moduleIndex;
+      selectedSubmoduleIndex = module.submodules.length - 1;
+      expandedModules.add(moduleIndex);
+
+      await saveCourseModules();
+      renderCourse();
+      openInlineEditor();
+    }
+
+    deleteModuleBtn.addEventListener("click", async () => {
+      if (!canEditCourse()) return;
+
+      const selected = getSelectedItem();
+      if (!selected) return;
+
+      const itemName = selected.item.title || selected.titleFallback;
+      const shouldDelete = confirm(`Delete "${itemName}"?`);
+      if (!shouldDelete) return;
+
+      if (selected.type === "submodule") {
+        selected.module.submodules.splice(selectedSubmoduleIndex, 1);
+        selectedSubmoduleIndex = null;
+      } else {
+        currentCourse.modules.splice(selectedModuleIndex, 1);
+        selectedModuleIndex = Math.min(selectedModuleIndex, Math.max(0, currentCourse.modules.length - 1));
+        selectedSubmoduleIndex = null;
+      }
+
+      await saveCourseModules();
+      renderCourse();
+      closeInlineEditor();
+    });
+
+    editorForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      if (!canEditCourse()) {
+        alert("Only teachers can edit modules.");
+        return;
+      }
+
+      const selected = getSelectedItem();
+      if (!selected) {
+        alert("Please select a module or submodule first.");
+        return;
+      }
+
+      const title = document.getElementById("edit-module-title").value.trim();
+
+      if (!title) {
+        alert(`Please fill in the ${selected.item.kind === "quiz" ? "quiz" : selected.label.toLowerCase()} title.`);
+        return;
+      }
+
+      selected.item.title = title;
+
+      if (selected.item.kind === "quiz") {
+        const questions = collectQuizQuestions();
+        if (!questions.length) {
+          alert("Please add at least one valid quiz question.");
+          return;
+        }
+        selected.item.questions = questions;
+        selected.item.blocks = [];
+        selected.item.text = "";
+      } else {
+        const blocks = collectEditorBlocks();
+        if (!blocks.length) {
+          alert("Please add at least one content block.");
+          return;
+        }
+        selected.item.blocks = blocks;
+        selected.item.text = legacyTextFromBlocks(blocks);
+      }
+
+      await saveCourseModules();
+      renderCourse();
+      closeInlineEditor();
+    });
+
+    sidebarToggle.addEventListener("click", () => {
+      isSidebarCollapsed = !isSidebarCollapsed;
+      courseShell.classList.toggle("sidebar-collapsed", isSidebarCollapsed);
+      sidebarToggle.innerHTML = isSidebarCollapsed ? "&gt;" : "&lt;";
+      sidebarToggle.setAttribute("aria-label", isSidebarCollapsed ? "Show course sidebar" : "Hide course sidebar");
+      sidebarToggle.setAttribute("aria-expanded", String(!isSidebarCollapsed));
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      currentUser = user;
+
+      try {
+        const userSnap = await getDoc(doc(db, "users", user.uid));
+        if (userSnap.exists()) {
+          currentRole = userSnap.data().role || "student";
+        }
+      } catch (error) {
+        console.warn("Could not read user role:", error);
+      }
+
+      await loadCourse();
+    });
+  </script>
+</body>
+</html>

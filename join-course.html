@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join Course | Thicha</title>
+  <meta name="description" content="Browse available Thai courses and join a course." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="join-course.css" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Join course navigation">
+      <a href="index.html" class="logo" aria-label="Thicha home">
+        <span class="logo-mark">TH</span>
+        <span>Thicha</span>
+      </a>
+
+      <div class="join-header-actions">
+        <a href="profile.html" class="btn btn-small btn-login">Profile</a>
+        <a href="index.html" class="btn btn-small btn-login">Home</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="join-page">
+    <section class="join-hero container">
+      <p class="eyebrow">Available courses</p>
+      <h1>Join a Course</h1>
+      <p>Choose a course package below. Buy Now opens the test payment page with Stripe Card, Stripe QR Payment, and standalone PayPal.</p>
+    </section>
+
+    <section class="available-course-grid container" aria-label="Available courses">
+      <article class="available-course-card">
+        <p class="pricing-label">Complete Beginner Thai Course</p>
+        <h2>฿1,390</h2>
+        <p class="pricing-desc">A friendly course package designed for students who want clear lessons and practical Thai speaking skills.</p>
+        <ul>
+          <li>10 structured chapters</li>
+          <li>Video lesson placeholders</li>
+          <li>Worksheets and practice prompts</li>
+          <li>Quizzes after key lessons</li>
+          <li>Lifetime course access</li>
+          <li>Community support access</li>
+        </ul>
+        <a href="payment.html?course=beginner-thai-course" class="btn full-width">Buy Now</a>
+      </article>
+
+      <article class="available-course-card">
+        <p class="pricing-label">Thai Speaking Practice Course</p>
+        <h2>฿890</h2>
+        <p class="pricing-desc">A practical speaking course for students who want more guided conversation practice.</p>
+        <ul>
+          <li>Daily speaking situations</li>
+          <li>Useful Thai sentence patterns</li>
+          <li>Pronunciation practice</li>
+          <li>Short review activities</li>
+          <li>Lifetime course access</li>
+          <li>Beginner-friendly support</li>
+        </ul>
+        <a href="payment.html?course=thai-speaking-practice" class="btn full-width">Buy Now</a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
