@@ -112,3 +112,44 @@
     padding: 28px 22px;
   }
 }
+
+
+/* === THICHA PAGE STYLE OVERRIDES === */
+.join-page {
+  background:
+    linear-gradient(135deg, rgba(193, 219, 232, 0.42), transparent 34%),
+    #fffaf0;
+}
+
+.join-hero h1,
+.available-course-card h2 {
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--brown);
+  font-weight: 900;
+}
+
+.available-course-card {
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+  box-shadow: none;
+}
+
+.available-course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 rgba(67, 48, 46, 0.12);
+}
+
+.pricing-label,
+.available-course-card li::before {
+  color: var(--brown);
+}
+
+.available-course-card li::before {
+  background: var(--cream-dark);
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+}

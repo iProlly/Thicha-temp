@@ -36,3 +36,17 @@
 .password-toggle:hover {
   background: #d2dfed;
 }
+
+
+/* === THICHA PAGE STYLE OVERRIDES === */
+.password-toggle {
+  border: 1px solid var(--brown);
+  background: var(--cream-dark);
+  color: var(--brown);
+  border-radius: 12px;
+}
+
+.password-toggle:hover {
+  background: var(--coral);
+  transform: translateY(-50%) translateY(-1px);
+}

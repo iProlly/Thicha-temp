@@ -749,3 +749,88 @@ textarea.content-block-input {
     max-width: none;
   }
 }
+
+
+/* === THICHA PAGE STYLE OVERRIDES === */
+.course-page {
+  background:
+    linear-gradient(135deg, rgba(193, 219, 232, 0.38), transparent 34%),
+    #fffaf0;
+}
+
+.course-sidebar,
+.course-main-card,
+.course-editor-card,
+.content-block-editor,
+.quiz-question-editor-card,
+.quiz-question,
+.quiz-option,
+.content-video-block,
+.content-image-block,
+.block-type-menu,
+.rich-text-toolbar {
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+  box-shadow: none;
+}
+
+.course-sidebar {
+  background: #fffaf0;
+  border-right: 1px solid var(--brown);
+}
+
+.course-sidebar h2,
+.course-topline h1,
+.module-content-box h2,
+.inline-module-editor h2,
+.rich-text-display h3,
+.rich-text-input h3 {
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--brown);
+  font-weight: 900;
+}
+
+.module-nav-item.active > .module-nav-row,
+.module-nav-row:hover,
+.module-nav .submodule-btn:hover,
+.module-nav .submodule-btn.active {
+  background: var(--cream-dark);
+  color: var(--brown);
+  transform: none;
+}
+
+.module-nav .module-title-btn,
+.module-nav .submodule-btn {
+  font-weight: 900;
+}
+
+.module-nav .module-expand-btn,
+.remove-content-block-btn {
+  color: var(--brown);
+}
+
+.course-sidebar-toggle,
+.block-type-menu button,
+.rich-text-tool-btn {
+  background: var(--cream-dark);
+  color: var(--brown);
+  border: 1px solid var(--brown);
+  box-shadow: none;
+}
+
+.module-nav .add-submodule-btn,
+.add-module-sidebar-btn,
+.add-content-block-btn {
+  background: var(--white);
+  color: var(--brown);
+  border: 1px dashed var(--brown);
+}
+
+.content-block-input.rich-text-input,
+.rich-text-input {
+  background: var(--white);
+}
+
+.quiz-result {
+  color: var(--brown);
+}

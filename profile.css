@@ -588,3 +588,101 @@
 .join-course-card {
   min-height: 220px;
 }
+
+
+/* === THICHA PAGE STYLE OVERRIDES === */
+.dashboard-page {
+  background:
+    linear-gradient(135deg, rgba(193, 219, 232, 0.38), transparent 34%),
+    #fffaf0;
+}
+
+.dashboard-sidebar,
+.dashboard-content,
+.profile-info-card,
+.course-dashboard-card,
+.progress-card,
+.settings-card,
+.chat-contact-list,
+.chat-window,
+.profile-edit-form,
+.add-course-card {
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+  box-shadow: none;
+}
+
+.dashboard-user-card {
+  background: var(--coral);
+  color: var(--brown);
+  border: 1px solid var(--brown);
+}
+
+.dashboard-user-card span {
+  color: var(--soft-brown);
+}
+
+.dashboard-tab {
+  color: var(--brown);
+  font-weight: 900;
+  border: 1px solid transparent;
+}
+
+.dashboard-tab:hover,
+.dashboard-tab.active {
+  background: var(--cream-dark);
+  color: var(--brown);
+  border-color: var(--brown);
+  transform: none;
+}
+
+.dashboard-panel h1,
+.course-dashboard-card h2,
+.settings-card h2,
+.profile-edit-form-header h2 {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 900;
+}
+
+.profile-info-card strong,
+.progress-card strong,
+.chat-window-header strong {
+  color: var(--brown);
+}
+
+.course-tag {
+  background: var(--cream-dark);
+  color: var(--brown);
+  border: 1px solid var(--line);
+}
+
+.clickable-course-card:hover,
+.add-course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 rgba(67, 48, 46, 0.12);
+}
+
+.add-course-card span {
+  background: var(--coral);
+  color: var(--brown);
+  border: 1px solid var(--brown);
+}
+
+.chat-contact-button:hover,
+.chat-contact-button.active,
+.chat-message.mine {
+  background: var(--cream-dark);
+}
+
+.chat-message.theirs,
+.chat-message {
+  background: var(--coral);
+  color: var(--brown);
+}
+
+.profile-edit-btn,
+.profile-edit-close {
+  background: var(--cream-dark);
+  color: var(--brown);
+  border: 1px solid var(--brown);
+}

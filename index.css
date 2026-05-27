@@ -892,3 +892,101 @@
     border-radius: 18px;
   }
 }
+
+
+/* === THICHA PAGE STYLE OVERRIDES === */
+.hero,
+.soft-section,
+.testimonials-section {
+  background: #fffaf0;
+}
+
+.hero::before {
+  background: var(--coral);
+  opacity: 0.55;
+}
+
+.hero::after {
+  background: var(--cream-dark);
+  opacity: 0.7;
+}
+
+.hero-card,
+.feature-card,
+.benefit-card,
+.review-card,
+.curriculum-card,
+.pricing-card,
+.faq-item,
+.final-cta-card,
+.teacher-placeholder,
+.about-image {
+  border: 1px solid var(--line-strong);
+  box-shadow: none;
+}
+
+.hero-card {
+  background: var(--coral);
+}
+
+.teacher-placeholder,
+.about-image {
+  background: var(--white);
+}
+
+.hero-stats div,
+.feature-card,
+.benefit-card,
+.review-card,
+.curriculum-card,
+.pricing-card,
+.faq-item {
+  background: var(--white);
+}
+
+.icon,
+.curriculum-card span,
+.faq-question span {
+  background: var(--cream-dark);
+  color: var(--brown);
+  border: 1px solid var(--line);
+}
+
+.benefits-section {
+  background: var(--coral);
+}
+
+.benefits-heading h2::after {
+  background: var(--cream-dark);
+}
+
+.benefit-icon {
+  border-color: var(--brown);
+  background: var(--white);
+}
+
+.phone-placeholder {
+  background: var(--cream-dark);
+  border-color: var(--brown);
+}
+
+.teacher-intro {
+  background: var(--white);
+}
+
+.teacher-intro::before {
+  background: var(--coral);
+}
+
+.final-cta-card {
+  background: var(--brown);
+  color: var(--cream-dark);
+}
+
+.final-cta-card h2 {
+  color: var(--cream-dark);
+}
+
+.final-cta-card p {
+  color: rgba(255, 241, 181, 0.82);
+}
