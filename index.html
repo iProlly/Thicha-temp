@@ -15,8 +15,8 @@
   <header class="site-header" id="home">
     <nav class="navbar container" aria-label="Main navigation">
       <a href="#home" class="logo" aria-label="Learn Thai Online home">
-        <span class="logo-mark">TH</span>
-        <span>Thicha</span>
+        <img src="assets/logo.png" alt="Thai Teacher Thicha Logo" class="site-logo">
+        <span>Thai Teacher Thicha</span>
       </a>
 
       <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
@@ -51,11 +51,10 @@
       <div class="container hero-grid">
         <div class="hero-content">
           <p class="eyebrow">Online Thai course by</p>
-          <h1>Thicha</h1>
-          <p class="hero-text">Learn Thai step by step with friendly lessons, and simple exercises that help you speak Thai with confidence.</p>
+          <h1>Kru Thicha</h1>
+          <p class="hero-text">Certified native Thai instructor with over 5 years of specialized experience teaching international students. From beginner foundations to advanced proficiency, I expertly guide students through conversational Thai, reading, writing, and professional business communication with personalized learning approaches.</p>
           <div class="hero-actions">
             <a href="#pricing" class="btn">Join the Course</a>
-            <a href="#curriculum" class="btn btn-secondary">View Curriculum</a>
           </div>
           <div class="hero-stats" aria-label="Course highlights">
             <div><strong>xx</strong><span>Chapters</span></div>
@@ -65,7 +64,7 @@
 
         <div class="hero-card" aria-label="Course preview card">
           <div class="teacher-placeholder">
-            <img src="assets/teacher.jpg" alt="Teacher Thicha" class="teacher-photo">
+            <img src="assets/teacher.png" alt="Teacher Thicha" class="teacher-photo">
           </div>
           <div style="display: none;">
           <div class="preview-card floating-card top-card">
@@ -122,29 +121,45 @@
           <p>Each chapter focuses on practical Thai for daily conversation, travel, and personal introductions.</p>
         </div>
 
-        <div class="curriculum-grid">
-          <div class="curriculum-card">
-            <h3>Chapters 1–5</h3>
-            <ul>
-              <li><span>01</span> Thai greetings and polite particles</li>
-              <li><span>02</span> Tones, vowels, and pronunciation basics</li>
-              <li><span>03</span> Introducing yourself naturally</li>
-              <li><span>04</span> Numbers, time, and simple questions</li>
-              <li><span>05</span> Ordering food and drinks</li>
-            </ul>
-          </div>
-          <div class="curriculum-card">
-            <h3>Chapters 6–10</h3>
-            <ul>
-              <li><span>06</span> Shopping and asking for prices</li>
-              <li><span>07</span> Directions and transportation</li>
-              <li><span>08</span> Daily routine sentences</li>
-              <li><span>09</span> Reading useful Thai words</li>
-              <li><span>10</span> Speaking practice and final review</li>
-            </ul>
-          </div>
+        <div class="curriculum-grid curriculum-dropdown-grid">
+          <article class="curriculum-card curriculum-dropdown open">
+            <button type="button" class="curriculum-dropdown-toggle" aria-expanded="true">
+              <span class="curriculum-dropdown-title">Chapter 1–8</span>
+              <span class="curriculum-dropdown-icon">⌃</span>
+            </button>
+            <div class="curriculum-dropdown-content">
+              <ul>
+                <li><span>01</span> Thai greetings and polite particles</li>
+                <li><span>02</span> Tones, vowels, and pronunciation basics</li>
+                <li><span>03</span> Introducing yourself naturally</li>
+                <li><span>04</span> Numbers, time, and simple questions</li>
+                <li><span>05</span> Ordering food and drinks</li>
+                <li><span>06</span> Shopping and asking for prices</li>
+                <li><span>07</span> Directions and transportation</li>
+                <li><span>08</span> Daily routine sentences</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="curriculum-card curriculum-dropdown open">
+            <button type="button" class="curriculum-dropdown-toggle" aria-expanded="true">
+              <span class="curriculum-dropdown-title">Chapter 9–16</span>
+              <span class="curriculum-dropdown-icon">⌃</span>
+            </button>
+            <div class="curriculum-dropdown-content">
+              <ul>
+                <li><span>09</span> Reading useful Thai words</li>
+                <li><span>10</span> Speaking practice and final review</li>
+                <li><span>11</span> Common daily conversations</li>
+                <li><span>12</span> Thai sentence building</li>
+                <li><span>13</span> Useful travel Thai</li>
+                <li><span>14</span> Listening and response practice</li>
+                <li><span>15</span> Cultural communication tips</li>
+                <li><span>16</span> Course review and next steps</li>
+              </ul>
+            </div>
+          </article>
         </div>
-      </div>
     </section>
 
     <section class="section-pad benefits-section" id="benefits">
@@ -457,6 +472,18 @@
     });
   </script>
 
+
+  <script>
+    document.querySelectorAll(".curriculum-dropdown-toggle").forEach((button) => {
+      button.addEventListener("click", () => {
+        const card = button.closest(".curriculum-dropdown");
+        const isOpen = card.classList.toggle("open");
+        button.setAttribute("aria-expanded", String(isOpen));
+        const icon = button.querySelector(".curriculum-dropdown-icon");
+        if (icon) icon.textContent = isOpen ? "⌃" : "⌄";
+      });
+    });
+  </script>
   <script src="script.js"></script>
 </body>
 </html>

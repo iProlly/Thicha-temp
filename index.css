@@ -318,7 +318,7 @@
   border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.42), rgba(255,255,255,0.12)),
-    linear-gradient(135deg, #6f8fb4, #edf3f9 48%, #1f3552);
+    linear-gradient(135deg, #6f8fb4, #fff1b5 48%, #1f3552);
   border: 4px solid #111827;
   box-shadow: var(--shadow-soft);
   position: relative;
@@ -355,7 +355,7 @@
 .teacher-intro {
   position: relative;
   overflow: hidden;
-  background: #edf3f9;
+  background: #fff1b5;
 }
 
 .teacher-intro::before {
@@ -787,7 +787,7 @@
 /* Sliding testimonials section */
 .testimonials-section {
   overflow: hidden;
-  background: #edf3f9;
+  background: #fff1b5;
 }
 
 .testimonials-heading {
@@ -898,7 +898,7 @@
 .hero,
 .soft-section,
 .testimonials-section {
-  background: #fffaf0;
+  background: #c1dbe8;
 }
 
 .hero::before {
@@ -989,4 +989,273 @@
 
 .final-cta-card p {
   color: rgba(255, 241, 181, 0.82);
+}
+
+
+/* Curriculum dropdown cards */
+.curriculum-dropdown-grid {
+  align-items: start;
+}
+
+.curriculum-dropdown {
+  padding: 0;
+  overflow: hidden;
+}
+
+.curriculum-dropdown-toggle {
+  width: 100%;
+  min-height: 76px;
+  padding: 24px 26px;
+  border: 0;
+  background: var(--brown);
+  color: var(--cream-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  font: inherit;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.curriculum-dropdown-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--white);
+  color: var(--brown);
+  font-size: 1.2rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.curriculum-dropdown-content {
+  display: none;
+  padding: 24px 30px 30px;
+  background: var(--white);
+}
+
+.curriculum-dropdown.open .curriculum-dropdown-content {
+  display: block;
+}
+
+.curriculum-dropdown .curriculum-card h3 {
+  margin-bottom: 0;
+}
+
+@media (max-width: 680px) {
+  .curriculum-dropdown-toggle {
+    min-height: 66px;
+    padding: 20px;
+    font-size: 1.35rem;
+  }
+
+  .curriculum-dropdown-content {
+    padding: 18px 20px 24px;
+  }
+}
+
+
+/* Fix curriculum dropdown header text/icon alignment */
+.curriculum-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.curriculum-dropdown-toggle span {
+  width: auto;
+  height: auto;
+  display: inline;
+  flex: initial;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.curriculum-dropdown-title {
+  line-height: 1.1;
+}
+
+.curriculum-dropdown-toggle .curriculum-dropdown-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--brown);
+  font-size: 0;
+  position: relative;
+}
+
+.curriculum-dropdown-toggle .curriculum-dropdown-icon::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-right: 3px solid currentColor;
+  border-bottom: 3px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.curriculum-dropdown.open .curriculum-dropdown-toggle .curriculum-dropdown-icon::before {
+  transform: rotate(225deg) translateY(-2px);
+}
+
+.curriculum-dropdown-content .curriculum-card span,
+.curriculum-dropdown-content li span {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff1b5;
+  color: var(--brown);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+
+/* Centered accordion icon */
+.curriculum-dropdown-toggle {
+    min-height: 86px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+}
+
+.curriculum-dropdown-toggle .curriculum-dropdown-icon {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 50%;
+    position: relative;
+}
+
+.curriculum-dropdown-toggle .curriculum-dropdown-icon::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-right: 3px solid var(--brown);
+    border-bottom: 3px solid var(--brown);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -65%) rotate(45deg);
+}
+
+.curriculum-dropdown.open .curriculum-dropdown-toggle .curriculum-dropdown-icon::before {
+    transform: translate(-50%, -35%) rotate(225deg);
+}
+
+
+/* Remove teacher photo placeholder while keeping current swapped color system */
+.teacher-placeholder {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.teacher-photo {
+  background: transparent !important;
+  object-fit: contain;
+}
+
+
+/* Remove hero card background completely */
+.hero-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.teacher-placeholder {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+
+/* Course introduction section cream background */
+#course {
+    background: #fffaf0;
+}
+
+
+/* Teacher arm resting on section edge */
+.hero {
+    padding-bottom: 0 !important;
+}
+
+.teacher-photo {
+    transform: translateY(40px);
+}
+
+
+/* Teacher overlaps next section instead of going behind it */
+.hero {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-card,
+.teacher-placeholder,
+.teacher-photo {
+    position: relative;
+    z-index: 20;
+}
+
+#course {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* Allow teacher cutout to extend over the next section */
+.hero {
+    overflow: visible !important;
+    position: relative;
+    z-index: 5;
+}
+
+.hero-grid {
+    position: relative;
+    z-index: 10;
+}
+
+.hero-card,
+.teacher-placeholder,
+.teacher-photo {
+    position: relative;
+    z-index: 30;
+}
+
+.teacher-photo {
+    transform: translateY(70px);
+}
+
+#course {
+    position: relative;
+    z-index: 1;
+}
+
+.site-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
 }

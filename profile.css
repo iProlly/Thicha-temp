@@ -11,7 +11,7 @@
   background:
     radial-gradient(circle at top left, rgba(125, 151, 184, 0.18), transparent 28%),
     radial-gradient(circle at bottom right, rgba(193, 219, 232, 0.16), transparent 25%),
-    #edf3f9;
+    #fff1b5;
 }
 
 .dashboard-shell {
@@ -594,7 +594,7 @@
 .dashboard-page {
   background:
     linear-gradient(135deg, rgba(193, 219, 232, 0.38), transparent 34%),
-    #fffaf0;
+    #c1dbe8;
 }
 
 .dashboard-sidebar,
@@ -685,4 +685,10 @@
   background: var(--cream-dark);
   color: var(--brown);
   border: 1px solid var(--brown);
+}
+
+.site-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
 }

@@ -4,7 +4,7 @@
   background:
     radial-gradient(circle at top left, rgba(125, 151, 184, 0.12), transparent 28%),
     radial-gradient(circle at bottom right, rgba(193, 219, 232, 0.12), transparent 25%),
-    #edf3f9;
+    #fff1b5;
 }
 
 .course-shell {
@@ -755,7 +755,7 @@ textarea.content-block-input {
 .course-page {
   background:
     linear-gradient(135deg, rgba(193, 219, 232, 0.38), transparent 34%),
-    #fffaf0;
+    #c1dbe8;
 }
 
 .course-sidebar,
@@ -775,7 +775,7 @@ textarea.content-block-input {
 }
 
 .course-sidebar {
-  background: #fffaf0;
+  background: #c1dbe8;
   border-right: 1px solid var(--brown);
 }
 

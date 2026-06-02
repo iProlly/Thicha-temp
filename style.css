@@ -1,8 +1,8 @@
 :root {
-  --cream: #eef3f8;
-  --cream-dark: #dfe8f2;
+  --cream: #c1dbe8;
+  --cream-dark: #fff1b5;
   --pink: #7d97b8;
-  --coral: #c1dbe8;
+  --coral: #fffaf0;
   --orange: #6f8fb4;
   --brown: #1f3552;
   --soft-brown: #60738d;
@@ -29,7 +29,7 @@ html {
 
 body {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #edf3f9;
+  background: #fff1b5;
   color: var(--text);
   line-height: 1.65;
 }
@@ -159,14 +159,16 @@ ul {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
-  padding: 0 24px;
+  min-height: 70px;
+  padding: 0 200px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--coral), var(--orange));
   color: var(--white);
   font-weight: 800;
   box-shadow: 0 14px 26px rgba(242, 111, 94, 0.24);
   transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+  font-size: 1.6rem;
+  white-space: nowrap;
 }
 
 .btn:hover, .social-btn:hover {
@@ -390,11 +392,11 @@ h3 {
 
 /* === THICHA EDITORIAL SYSTEM OVERRIDES === */
 :root {
-  --cream: #fffaf0;
-  --cream-dark: #fff1b5;
-  --pink: #c1dbe8;
-  --coral: #c1dbe8;
-  --orange: #fff1b5;
+  --cream: #c1dbe8;
+  --cream-dark: #edf3f9;
+  --pink: #fffaf0;
+  --coral: #fffaf0;
+  --orange: #edf3f9;
   --brown: #43302e;
   --soft-brown: #6f5a56;
   --text: #43302e;
@@ -410,7 +412,7 @@ h3 {
 }
 
 body {
-  background: #fffaf0;
+  background: #c1dbe8;
   color: var(--text);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

@@ -7,7 +7,7 @@
   background:
     radial-gradient(circle at top left, rgba(125, 151, 184, 0.22), transparent 26%),
     radial-gradient(circle at bottom right, rgba(193, 219, 232, 0.18), transparent 24%),
-    #edf3f9;
+    #fff1b5;
 }
 
 .login-wrapper {
@@ -193,7 +193,7 @@
 .login-page {
   background:
     linear-gradient(135deg, rgba(193, 219, 232, 0.42), transparent 35%),
-    #fffaf0;
+    #c1dbe8;
 }
 
 .login-wrapper {
