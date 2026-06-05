@@ -39,6 +39,7 @@
         <nav class="dashboard-tabs">
           <button type="button" class="dashboard-tab active" data-tab="profile">Profile</button>
           <button type="button" class="dashboard-tab" data-tab="courses">My Course</button>
+          <button type="button" class="dashboard-tab" data-tab="ebooks">My Ebook</button>
           <button type="button" class="dashboard-tab" data-tab="chat">Chat</button>
           <button type="button" class="dashboard-tab" data-tab="settings">Settings</button>
         </nav>
@@ -117,6 +118,14 @@
           </div>
         </div>
 
+        <div class="dashboard-panel" id="ebooks-panel">
+          <p class="eyebrow" id="ebooks-eyebrow">Digital books</p>
+          <h1>My Ebook</h1>
+          <p class="dashboard-lead" id="ebooks-lead">Browse available ebooks. Click Buy Ebook to open the payment page.</p>
+
+          <div class="ebook-card-grid" id="profile-ebook-list"></div>
+        </div>
+
         <div class="dashboard-panel" id="chat-panel">
           <p class="eyebrow" id="chat-eyebrow">Messages</p>
           <h1>Chat</h1>
@@ -164,6 +173,20 @@
       </section>
     </section>
   </main>
+
+  <div class="ebook-lightbox" id="ebook-lightbox" aria-hidden="true">
+    <button type="button" class="ebook-lightbox-backdrop" id="ebook-lightbox-backdrop" aria-label="Close preview"></button>
+    <div class="ebook-lightbox-content" role="dialog" aria-modal="true" aria-label="Ebook image preview">
+      <button type="button" class="ebook-lightbox-close" id="ebook-lightbox-close" aria-label="Close preview">×</button>
+      <button type="button" class="ebook-lightbox-arrow ebook-lightbox-prev" id="ebook-lightbox-prev" aria-label="Previous image">&lt;</button>
+      <img src="" alt="" id="ebook-lightbox-image">
+      <button type="button" class="ebook-lightbox-arrow ebook-lightbox-next" id="ebook-lightbox-next" aria-label="Next image">&gt;</button>
+      <div class="ebook-lightbox-footer">
+        <div class="ebook-lightbox-counter" id="ebook-lightbox-counter">1 / 1</div>
+        <div class="ebook-lightbox-thumbnails" id="ebook-lightbox-thumbnails" aria-label="Preview thumbnails"></div>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
@@ -224,6 +247,17 @@
     const courseList = document.getElementById("profile-course-list");
     const coursesEyebrow = document.getElementById("courses-eyebrow");
     const coursesLead = document.getElementById("courses-lead");
+    const ebookList = document.getElementById("profile-ebook-list");
+    const ebooksEyebrow = document.getElementById("ebooks-eyebrow");
+    const ebooksLead = document.getElementById("ebooks-lead");
+    const ebookLightbox = document.getElementById("ebook-lightbox");
+    const ebookLightboxImage = document.getElementById("ebook-lightbox-image");
+    const ebookLightboxClose = document.getElementById("ebook-lightbox-close");
+    const ebookLightboxBackdrop = document.getElementById("ebook-lightbox-backdrop");
+    const ebookLightboxPrev = document.getElementById("ebook-lightbox-prev");
+    const ebookLightboxNext = document.getElementById("ebook-lightbox-next");
+    const ebookLightboxCounter = document.getElementById("ebook-lightbox-counter");
+    const ebookLightboxThumbnails = document.getElementById("ebook-lightbox-thumbnails");
     const chatContactTitle = document.getElementById("chat-contact-title");
     const chatContactList = document.getElementById("chat-contact-list");
     const chatActiveRole = document.getElementById("chat-active-role");
@@ -239,11 +273,14 @@
       username: "",
       email: "",
       role: "student",
-      enrolledCourses: []
+      enrolledCourses: [],
+      purchasedEbooks: []
     };
     let currentEditMode = "all";
     let activeChatContact = null;
     let unsubscribeMessages = null;
+    let ebookPreviewImages = [];
+    let ebookPreviewIndex = 0;
 
     function setText(id, value) {
       const element = document.getElementById(id);
@@ -284,6 +321,243 @@
           <a href="course.html?id=${courseId}" class="btn">${actionLabel}</a>
         </article>
       `;
+    }
+
+
+    const defaultEbooks = [
+      {
+        id: "beginner-thai-ebook",
+        title: "Beginner Thai Ebook",
+        description: "A downloadable ebook for beginner Thai learners, with clear examples and visual practice pages.",
+        thbDisplay: "฿490",
+        usdDisplay: "$15.00",
+        cover: "assets/ebooks/cover.png",
+        samples: [
+          "assets/ebooks/sample1.png",
+          "assets/ebooks/sample2.png",
+          "assets/ebooks/sample3.png",
+          "assets/ebooks/sample4.png"
+        ],
+        pdfs: [
+          {
+            title: "Beginner Thai Ebook PDF",
+            url: "assets/ebooks/beginner-thai-ebook.pdf"
+          }
+        ]
+      }
+    ];
+
+    function ebookImageTemplate(src, label, className) {
+      return `
+        <button type="button" class="${className} ebook-preview-trigger" data-full-src="${escapeHtml(src)}" data-preview-label="${escapeHtml(label)}" aria-label="Open ${escapeHtml(label)} full size">
+          <img src="${escapeHtml(src)}" alt="${escapeHtml(label)}" onerror="this.remove(); this.parentElement.classList.add('image-missing'); this.parentElement.disabled = true;">
+          <span>${escapeHtml(label)}</span>
+        </button>
+      `;
+    }
+
+    function ebookPdfLinksTemplate(ebook) {
+      const pdfs = Array.isArray(ebook.pdfs) && ebook.pdfs.length ? ebook.pdfs : defaultEbooks[0].pdfs;
+
+      return `
+        <div class="ebook-pdf-area" aria-label="Purchased ebook files">
+          <p class="ebook-pdf-title">PDF files</p>
+          <div class="ebook-pdf-list">
+            ${pdfs.map((pdf, index) => `
+              <a class="ebook-pdf-link" href="${escapeHtml(pdf.url || '')}" target="_blank" rel="noopener">
+                <span>PDF</span>
+                <strong>${escapeHtml(pdf.title || `Ebook PDF ${index + 1}`)}</strong>
+              </a>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function ebookCardTemplate(ebook) {
+      const ebookId = ebook.id || "beginner-thai-ebook";
+      const title = ebook.title || "Beginner Thai Ebook";
+      const description = ebook.description || "A downloadable ebook for beginner Thai learners.";
+      const samples = Array.isArray(ebook.samples) && ebook.samples.length ? ebook.samples : defaultEbooks[0].samples;
+      const owned = Array.isArray(currentProfile.purchasedEbooks) && currentProfile.purchasedEbooks.includes(ebookId);
+
+      return `
+        <article class="ebook-dashboard-card" data-ebook-id="${escapeHtml(ebookId)}">
+          <div class="ebook-main-preview">
+            ${ebookImageTemplate(ebook.cover || defaultEbooks[0].cover, `${title} cover`, "ebook-cover-preview")}
+          </div>
+          <div class="ebook-card-body">
+            <span class="course-tag">${owned ? "Purchased ebook" : "Available ebook"}</span>
+            <h2>${escapeHtml(title)}</h2>
+            <p>${escapeHtml(description)}</p>
+            ${!owned ? `<strong class="ebook-price">${escapeHtml(ebook.thbDisplay || "฿490")} / ${escapeHtml(ebook.usdDisplay || "$15.00")} PayPal</strong>` : ""}
+            <div class="ebook-sample-grid" aria-label="Sample ebook pages">
+              ${samples.slice(0, 4).map((sample, index) => ebookImageTemplate(sample, `Sample page ${index + 1}`, "ebook-sample-preview")).join("")}
+            </div>
+            ${owned ? ebookPdfLinksTemplate(ebook) : '<button type="button" class="btn ebook-buy-btn">Buy Ebook</button>'}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderEbookPreviewThumbnails() {
+      if (!ebookLightboxThumbnails) return;
+
+      ebookLightboxThumbnails.innerHTML = ebookPreviewImages.map((image, index) => `
+        <button type="button" class="ebook-lightbox-thumb ${index === ebookPreviewIndex ? "active" : ""}" data-preview-index="${index}" aria-label="Open ${escapeHtml(image.label)}">
+          <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.label)} thumbnail">
+        </button>
+      `).join("");
+
+      ebookLightboxThumbnails.querySelectorAll(".ebook-lightbox-thumb").forEach((button) => {
+        button.addEventListener("click", () => {
+          showEbookPreviewImage(Number(button.dataset.previewIndex));
+        });
+      });
+    }
+
+    function showEbookPreviewImage(index) {
+      if (!ebookPreviewImages.length || !ebookLightboxImage) return;
+
+      ebookPreviewIndex = (index + ebookPreviewImages.length) % ebookPreviewImages.length;
+      const image = ebookPreviewImages[ebookPreviewIndex];
+
+      ebookLightboxImage.src = image.src;
+      ebookLightboxImage.alt = image.label || "Ebook preview";
+
+      if (ebookLightboxCounter) {
+        ebookLightboxCounter.textContent = `${ebookPreviewIndex + 1} / ${ebookPreviewImages.length}`;
+      }
+
+      renderEbookPreviewThumbnails();
+    }
+
+    function openEbookPreview(button) {
+      if (!ebookLightbox || !ebookLightboxImage || !button) return;
+
+      const card = button.closest(".ebook-dashboard-card");
+      const triggers = card ? Array.from(card.querySelectorAll(".ebook-preview-trigger:not(:disabled)")) : [button];
+
+      ebookPreviewImages = triggers
+        .map((trigger) => ({
+          src: trigger.dataset.fullSrc,
+          label: trigger.dataset.previewLabel || "Ebook preview"
+        }))
+        .filter((image) => image.src);
+
+      ebookPreviewIndex = Math.max(0, triggers.indexOf(button));
+
+      ebookLightbox.classList.add("active");
+      ebookLightbox.setAttribute("aria-hidden", "false");
+      document.body.classList.add("ebook-preview-open");
+      showEbookPreviewImage(ebookPreviewIndex);
+    }
+
+    function moveEbookPreview(step) {
+      if (!ebookLightbox?.classList.contains("active")) return;
+      showEbookPreviewImage(ebookPreviewIndex + step);
+    }
+
+    function closeEbookPreview() {
+      if (!ebookLightbox || !ebookLightboxImage) return;
+      ebookLightbox.classList.remove("active");
+      ebookLightbox.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("ebook-preview-open");
+      ebookLightboxImage.src = "";
+      ebookLightboxImage.alt = "";
+      ebookPreviewImages = [];
+      ebookPreviewIndex = 0;
+      if (ebookLightboxThumbnails) ebookLightboxThumbnails.innerHTML = "";
+      if (ebookLightboxCounter) ebookLightboxCounter.textContent = "1 / 1";
+    }
+
+    function renderEbookCards(ebooks = defaultEbooks) {
+      if (!ebookList) return;
+
+      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
+      ebooksEyebrow.textContent = isTeacher ? "Teacher ebook area" : "Digital books";
+      ebooksLead.textContent = isTeacher
+        ? "Add ebooks for students. Each ebook can show one cover image and four sample page images."
+        : "Browse available ebooks. Click Buy Ebook to open the payment page.";
+
+      ebookList.innerHTML = ebooks.map(ebookCardTemplate).join("");
+
+      if (isTeacher) {
+        ebookList.insertAdjacentHTML("beforeend", `
+          <button type="button" class="add-course-card" id="add-ebook-card">
+            <span>+</span>
+            <strong>Add Ebook</strong>
+            <small>Create another ebook listing later.</small>
+          </button>
+        `);
+
+        document.getElementById("add-ebook-card").addEventListener("click", createNewEbook);
+      }
+
+      ebookList.querySelectorAll(".ebook-preview-trigger").forEach((button) => {
+        button.addEventListener("click", () => openEbookPreview(button));
+      });
+
+      ebookList.querySelectorAll(".ebook-buy-btn").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const card = event.target.closest(".ebook-dashboard-card");
+          if (!card) return;
+          window.location.href = `payment.html?ebook=${encodeURIComponent(card.dataset.ebookId)}`;
+        });
+      });
+    }
+
+    async function loadProfileEbooks() {
+      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
+      const ebooks = [];
+
+      try {
+        const ebookSnap = isTeacher
+          ? await getDocs(query(collection(db, "ebooks"), where("teacherId", "==", currentUser.uid)))
+          : await getDocs(collection(db, "ebooks"));
+
+        ebookSnap.forEach((ebookDoc) => {
+          ebooks.push({ id: ebookDoc.id, ...ebookDoc.data() });
+        });
+      } catch (error) {
+        console.warn("Could not load ebooks:", error);
+      }
+
+      renderEbookCards(ebooks.length ? ebooks : defaultEbooks);
+    }
+
+    async function createNewEbook() {
+      const title = prompt("Ebook title:");
+      if (!title) return;
+
+      try {
+        await addDoc(collection(db, "ebooks"), {
+          title: title.trim(),
+          description: "Add a short ebook description here.",
+          thbDisplay: "฿490",
+          usdDisplay: "$15.00",
+          cover: "assets/ebooks/beginner-thai-cover.jpg",
+          samples: [
+            "assets/ebooks/beginner-thai-sample-1.jpg",
+            "assets/ebooks/beginner-thai-sample-2.jpg",
+            "assets/ebooks/beginner-thai-sample-3.jpg",
+            "assets/ebooks/beginner-thai-sample-4.jpg"
+          ],
+          pdfs: [
+            {
+              title: "Ebook PDF",
+              url: "assets/ebooks/beginner-thai-ebook.pdf"
+            }
+          ],
+          teacherId: currentUser.uid,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        await loadProfileEbooks();
+      } catch (error) {
+        alert(error.message);
+      }
     }
 
     function renderCourseCards(courses = []) {
@@ -581,6 +855,16 @@
       editForm.classList.remove("active");
     }
 
+    ebookLightboxClose?.addEventListener("click", closeEbookPreview);
+    ebookLightboxBackdrop?.addEventListener("click", closeEbookPreview);
+    ebookLightboxPrev?.addEventListener("click", () => moveEbookPreview(-1));
+    ebookLightboxNext?.addEventListener("click", () => moveEbookPreview(1));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeEbookPreview();
+      if (event.key === "ArrowLeft") moveEbookPreview(-1);
+      if (event.key === "ArrowRight") moveEbookPreview(1);
+    });
+
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         const target = tab.dataset.tab;
@@ -749,6 +1033,7 @@
       let email = user.email || "";
       let role = "student";
       let enrolledCourses = [];
+      let purchasedEbooks = [];
 
       try {
         const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -760,14 +1045,16 @@
           email = data.email || email;
           role = data.role || role;
           enrolledCourses = Array.isArray(data.enrolledCourses) ? data.enrolledCourses : [];
+          purchasedEbooks = Array.isArray(data.purchasedEbooks) ? data.purchasedEbooks : [];
         }
       } catch (error) {
         console.warn("Could not load profile document:", error);
       }
 
-      currentProfile = { fullName, username, email, role, enrolledCourses };
+      currentProfile = { fullName, username, email, role, enrolledCourses, purchasedEbooks };
       renderProfile();
       await loadProfileCourses();
+      await loadProfileEbooks();
       await loadChatContacts();
     });
   </script>

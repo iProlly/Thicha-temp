@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment | Thicha</title>
-  <meta name="description" content="Test payment page for Thicha courses with Stripe and PayPal." />
+  <meta name="description" content="Test payment page for Thicha courses and ebooks with Stripe, PayPal, and Wise test mode." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
       <article class="payment-card">
         <p class="eyebrow">Test payment</p>
         <h1 id="course-title">Loading course...</h1>
-        <p class="payment-lead" id="course-description">Choose Card, QR Payment, or PayPal to complete the test payment.</p>
+        <p class="payment-lead" id="course-description">Choose Card, QR Payment, PayPal, or Wise Test to complete the test payment.</p>
 
         <div class="payment-summary">
           <span>Amount</span>
@@ -41,6 +41,7 @@
           <button type="button" class="payment-tab active" data-method="card">Card</button>
           <button type="button" class="payment-tab" data-method="qr">QR Payment</button>
           <button type="button" class="payment-tab" data-method="paypal">PayPal</button>
+          <button type="button" class="payment-tab" data-method="wise">Wise Test</button>
         </div>
 
         <section class="payment-method-panel active" id="card-panel">
@@ -67,7 +68,15 @@
           </div>
         </section>
 
-        <p class="payment-note">Localhost setup: website on port 5500, payment API on port 4242. Card/QR uses Stripe; PayPal uses PayPal Checkout.</p>
+        <section class="payment-method-panel" id="wise-panel">
+          <div class="stripe-panel">
+            <h2>Pay by Wise Test</h2>
+            <p>This is a localhost test button because Wise Sandbox Payment Links are currently failing. It simulates a successful Wise payment and unlocks the selected course or ebook in Firestore.</p>
+            <button type="button" class="btn full-width" id="pay-wise-test-btn">Test Wise Payment</button>
+          </div>
+        </section>
+
+        <p class="payment-note">Localhost setup: website on port 5500, payment API on port 4242. Card/QR uses Stripe; PayPal uses PayPal Checkout; Wise Test simulates a successful Wise payment for local testing only.</p>
         <p class="payment-status" id="payment-status"></p>
       </article>
     </section>
@@ -117,9 +126,23 @@
       }
     };
 
+    const ebooks = {
+      "beginner-thai-ebook": {
+        id: "beginner-thai-ebook",
+        title: "Beginner Thai Ebook",
+        description: "A downloadable ebook for beginner Thai learners, with clear examples and visual practice pages.",
+        thbDisplay: "฿490",
+        usdDisplay: "$15.00"
+      }
+    };
+
     const params = new URLSearchParams(window.location.search);
-    const courseId = params.get("course") || "beginner-thai-course";
-    const course = courses[courseId] || courses["beginner-thai-course"];
+    const ebookId = params.get("ebook");
+    const courseId = params.get("course") || (ebookId ? "" : "beginner-thai-course");
+    const itemType = ebookId ? "ebook" : "course";
+    const item = itemType === "ebook"
+      ? (ebooks[ebookId] || ebooks["beginner-thai-ebook"])
+      : (courses[courseId] || courses["beginner-thai-course"]);
     const stripeSessionId = params.get("stripe_session_id");
     const stripeCancelled = params.get("stripe_cancelled");
 
@@ -129,14 +152,16 @@
     const payQrBtn = document.getElementById("pay-qr-btn");
     const paymentStatus = document.getElementById("payment-status");
     const paypalButtonsContainer = document.getElementById("paypal-buttons");
+    const payWiseTestBtn = document.getElementById("pay-wise-test-btn");
 
     let currentUser = null;
     let handledStripeReturn = false;
     let paypalLoaded = false;
 
-    document.getElementById("course-title").textContent = course.title;
-    document.getElementById("course-description").textContent = course.description;
-    document.getElementById("course-price").textContent = `${course.thbDisplay} / ${course.usdDisplay} PayPal`;
+    document.getElementById("course-title").textContent = item.title;
+    document.getElementById("course-description").textContent = item.description;
+    document.getElementById("course-price").textContent = `${item.thbDisplay} / ${item.usdDisplay} PayPal or Wise`;
+    document.querySelector(".eyebrow").textContent = itemType === "ebook" ? "Test ebook payment" : "Test payment";
 
     function setStatus(message, type = "") {
       paymentStatus.textContent = message;
@@ -149,18 +174,20 @@
       return { Authorization: `Bearer ${idToken}` };
     }
 
-    async function enrollCurrentUser(paidCourseId) {
-      if (!currentUser || !paidCourseId) return;
+    async function enrollCurrentUser(paidItemId, paidItemType = itemType) {
+      if (!currentUser || !paidItemId) return;
 
+      const fieldName = paidItemType === "ebook" ? "purchasedEbooks" : "enrolledCourses";
       await setDoc(doc(db, "users", currentUser.uid), {
-        enrolledCourses: arrayUnion(paidCourseId),
+        [fieldName]: arrayUnion(paidItemId),
         updatedAt: serverTimestamp()
       }, { merge: true });
     }
 
-    async function finishPaidCourse(paidCourseId) {
-      await enrollCurrentUser(paidCourseId);
-      setStatus("Payment successful. Course added to your account. Redirecting...", "success");
+    async function finishPaidItem(paidItemId, paidItemType = itemType) {
+      await enrollCurrentUser(paidItemId, paidItemType);
+      const itemLabel = paidItemType === "ebook" ? "Ebook" : "Course";
+      setStatus(`Payment successful. ${itemLabel} added to your account. Redirecting...`, "success");
       setTimeout(() => { window.location.href = "profile.html"; }, 1200);
     }
 
@@ -196,7 +223,10 @@
             ...(await getAuthHeader())
           },
           body: JSON.stringify({
-            courseId: course.id,
+            itemId: item.id,
+            itemType,
+            courseId: itemType === "course" ? item.id : undefined,
+            ebookId: itemType === "ebook" ? item.id : undefined,
             method
           })
         });
@@ -214,6 +244,25 @@
 
     payCardBtn.addEventListener("click", () => startStripeCheckout("card"));
     payQrBtn.addEventListener("click", () => startStripeCheckout("promptpay"));
+
+    async function startWiseTestPayment() {
+      if (!currentUser) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      payWiseTestBtn.disabled = true;
+      setStatus("Simulating Wise payment for localhost testing...");
+
+      try {
+        await finishPaidItem(item.id, itemType);
+      } catch (error) {
+        setStatus(error.message || "Could not complete Wise test payment.", "error");
+        payWiseTestBtn.disabled = false;
+      }
+    }
+
+    payWiseTestBtn.addEventListener("click", startWiseTestPayment);
 
     async function loadPayPalButtons() {
       if (paypalLoaded) return;
@@ -256,7 +305,12 @@
               "Content-Type": "application/json",
               ...(await getAuthHeader())
             },
-            body: JSON.stringify({ courseId: course.id })
+            body: JSON.stringify({
+              itemId: item.id,
+              itemType,
+              courseId: itemType === "course" ? item.id : undefined,
+              ebookId: itemType === "ebook" ? item.id : undefined
+            })
           });
 
           const data = await result.json();
@@ -279,7 +333,7 @@
           if (!result.ok) throw new Error(capture.error || "Could not capture PayPal payment.");
 
           if (capture.paid) {
-            await finishPaidCourse(capture.courseId || course.id);
+            await finishPaidItem(capture.itemId || capture.courseId || capture.ebookId || item.id, capture.itemType || itemType);
           } else {
             setStatus(`PayPal status: ${capture.status || capture.captureStatus}.`, "");
           }
@@ -308,7 +362,7 @@
         if (!result.ok) throw new Error(data.error || "Could not check Stripe session.");
 
         if (data.paid) {
-          await finishPaidCourse(data.courseId || course.id);
+          await finishPaidItem(data.itemId || data.courseId || data.ebookId || item.id, data.itemType || itemType);
         } else {
           setStatus(`Stripe session status: ${data.status}; payment: ${data.paymentStatus}.`, "");
         }

@@ -46,6 +46,16 @@ const courses = {
   }
 };
 
+const ebooks = {
+  "beginner-thai-ebook": {
+    title: "Beginner Thai Ebook",
+    thbAmount: 49000,       // Stripe Card / QR Payment in satang = ฿490
+    usdAmount: "15.00",
+    thbDisplay: "฿490",
+    usdDisplay: "$15.00"
+  }
+};
+
 function getBearerToken(req) {
   const authHeader = req.headers.authorization || "";
   return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
@@ -66,6 +76,15 @@ function requireLoginToken(req, res, next) {
 
 function getCourseOrFail(courseId) {
   return courses[courseId] || null;
+}
+
+function getItemOrFail(itemId, itemType = "course") {
+  if (itemType === "ebook") return ebooks[itemId] || null;
+  return courses[itemId] || null;
+}
+
+function itemUrlParam(itemId, itemType = "course") {
+  return `${itemType === "ebook" ? "ebook" : "course"}=${encodeURIComponent(itemId)}`;
 }
 
 function stripeAuthHeader() {
@@ -193,41 +212,49 @@ app.get("/api/config", (req, res) => {
 
 app.post("/api/create-stripe-checkout-session", requireLoginToken, async (req, res) => {
   try {
-    const { courseId, method } = req.body;
-    const course = getCourseOrFail(courseId);
+    const { courseId, ebookId, itemId: rawItemId, itemType: rawItemType, method } = req.body;
+    const itemType = rawItemType === "ebook" || ebookId ? "ebook" : "course";
+    const itemId = rawItemId || ebookId || courseId;
+    const item = getItemOrFail(itemId, itemType);
 
-    if (!course) {
-      return res.status(400).json({ error: "Invalid course." });
+    if (!item) {
+      return res.status(400).json({ error: `Invalid ${itemType}.` });
     }
 
     const paymentMethod = method === "promptpay" ? "promptpay" : "card";
 
     const session = await stripeRequest("/checkout/sessions", {
       mode: "payment",
-      success_url: `${FRONTEND_BASE}/payment.html?course=${encodeURIComponent(courseId)}&stripe_session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${FRONTEND_BASE}/payment.html?course=${encodeURIComponent(courseId)}&stripe_cancelled=1`,
-      client_reference_id: courseId,
+      success_url: `${FRONTEND_BASE}/payment.html?${itemUrlParam(itemId, itemType)}&stripe_session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${FRONTEND_BASE}/payment.html?${itemUrlParam(itemId, itemType)}&stripe_cancelled=1`,
+      client_reference_id: itemId,
       payment_method_types: [paymentMethod],
       line_items: [
         {
           quantity: 1,
           price_data: {
             currency: "thb",
-            unit_amount: course.thbAmount,
+            unit_amount: item.thbAmount,
             product_data: {
-              name: course.title
+              name: item.title
             }
           }
         }
       ],
       metadata: {
-        courseId,
+        itemId,
+        itemType,
+        courseId: itemType === "course" ? itemId : "",
+        ebookId: itemType === "ebook" ? itemId : "",
         localTest: "true",
         method: paymentMethod
       },
       payment_intent_data: {
         metadata: {
-          courseId,
+          itemId,
+          itemType,
+          courseId: itemType === "course" ? itemId : "",
+          ebookId: itemType === "ebook" ? itemId : "",
           localTest: "true",
           method: paymentMethod
         }
@@ -237,7 +264,10 @@ app.post("/api/create-stripe-checkout-session", requireLoginToken, async (req, r
     res.json({
       checkoutUrl: session.url,
       sessionId: session.id,
-      courseId
+      itemId,
+      itemType,
+      courseId: itemType === "course" ? itemId : "",
+      ebookId: itemType === "ebook" ? itemId : ""
     });
   } catch (error) {
     res.status(500).json({
@@ -250,14 +280,18 @@ app.get("/api/check-stripe-session/:sessionId", requireLoginToken, async (req, r
   try {
     const session = await stripeRequest(`/checkout/sessions/${encodeURIComponent(req.params.sessionId)}`);
     const paid = session.payment_status === "paid" || session.status === "complete";
-    const courseId = session.metadata?.courseId || session.client_reference_id;
+    const itemId = session.metadata?.itemId || session.metadata?.courseId || session.metadata?.ebookId || session.client_reference_id;
+    const itemType = session.metadata?.itemType || (session.metadata?.ebookId ? "ebook" : "course");
 
     res.json({
       sessionId: session.id,
       paid,
       status: session.status,
       paymentStatus: session.payment_status,
-      courseId
+      itemId,
+      itemType,
+      courseId: itemType === "course" ? itemId : "",
+      ebookId: itemType === "ebook" ? itemId : ""
     });
   } catch (error) {
     res.status(500).json({
@@ -268,22 +302,24 @@ app.get("/api/check-stripe-session/:sessionId", requireLoginToken, async (req, r
 
 app.post("/api/create-paypal-order", requireLoginToken, async (req, res) => {
   try {
-    const { courseId } = req.body;
-    const course = getCourseOrFail(courseId);
+    const { courseId, ebookId, itemId: rawItemId, itemType: rawItemType } = req.body;
+    const itemType = rawItemType === "ebook" || ebookId ? "ebook" : "course";
+    const itemId = rawItemId || ebookId || courseId;
+    const item = getItemOrFail(itemId, itemType);
 
-    if (!course) {
-      return res.status(400).json({ error: "Invalid course." });
+    if (!item) {
+      return res.status(400).json({ error: `Invalid ${itemType}.` });
     }
 
     const order = await paypalRequest("/v2/checkout/orders", {
       intent: "CAPTURE",
       purchase_units: [
         {
-          custom_id: courseId,
-          description: course.title,
+          custom_id: `${itemType}:${itemId}`,
+          description: item.title,
           amount: {
             currency_code: "USD",
-            value: course.usdAmount
+            value: item.usdAmount
           }
         }
       ],
@@ -296,7 +332,10 @@ app.post("/api/create-paypal-order", requireLoginToken, async (req, res) => {
 
     res.json({
       orderId: order.id,
-      courseId
+      itemId,
+      itemType,
+      courseId: itemType === "course" ? itemId : "",
+      ebookId: itemType === "ebook" ? itemId : ""
     });
   } catch (error) {
     res.status(500).json({
@@ -316,7 +355,10 @@ app.post("/api/capture-paypal-order", requireLoginToken, async (req, res) => {
     const capture = await paypalRequest(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {});
 
     const purchaseUnit = capture.purchase_units?.[0];
-    const courseId = purchaseUnit?.custom_id;
+    const customId = purchaseUnit?.custom_id || "";
+    const [customType, customItemId] = customId.includes(":") ? customId.split(":") : ["course", customId];
+    const itemType = customType === "ebook" ? "ebook" : "course";
+    const itemId = customItemId;
     const captureData = purchaseUnit?.payments?.captures?.[0];
     const paid = capture.status === "COMPLETED" || captureData?.status === "COMPLETED";
 
@@ -325,7 +367,10 @@ app.post("/api/capture-paypal-order", requireLoginToken, async (req, res) => {
       paid,
       status: capture.status,
       captureStatus: captureData?.status || "",
-      courseId
+      itemId,
+      itemType,
+      courseId: itemType === "course" ? itemId : "",
+      ebookId: itemType === "ebook" ? itemId : ""
     });
   } catch (error) {
     res.status(500).json({
