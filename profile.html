@@ -474,25 +474,11 @@
     function renderEbookCards(ebooks = defaultEbooks) {
       if (!ebookList) return;
 
-      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
-      ebooksEyebrow.textContent = isTeacher ? "Teacher ebook area" : "Digital books";
-      ebooksLead.textContent = isTeacher
-        ? "Add ebooks for students. Each ebook can show one cover image and four sample page images."
-        : "Browse available ebooks. Click Buy Ebook to open the payment page.";
+      ebooksEyebrow.textContent = "Digital books";
+      ebooksLead.textContent = "Browse the available ebook. Click Buy Ebook to open the payment page.";
 
       ebookList.innerHTML = ebooks.map(ebookCardTemplate).join("");
 
-      if (isTeacher) {
-        ebookList.insertAdjacentHTML("beforeend", `
-          <button type="button" class="add-course-card" id="add-ebook-card">
-            <span>+</span>
-            <strong>Add Ebook</strong>
-            <small>Create another ebook listing later.</small>
-          </button>
-        `);
-
-        document.getElementById("add-ebook-card").addEventListener("click", createNewEbook);
-      }
 
       ebookList.querySelectorAll(".ebook-preview-trigger").forEach((button) => {
         button.addEventListener("click", () => openEbookPreview(button));
@@ -508,56 +494,7 @@
     }
 
     async function loadProfileEbooks() {
-      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
-      const ebooks = [];
-
-      try {
-        const ebookSnap = isTeacher
-          ? await getDocs(query(collection(db, "ebooks"), where("teacherId", "==", currentUser.uid)))
-          : await getDocs(collection(db, "ebooks"));
-
-        ebookSnap.forEach((ebookDoc) => {
-          ebooks.push({ id: ebookDoc.id, ...ebookDoc.data() });
-        });
-      } catch (error) {
-        console.warn("Could not load ebooks:", error);
-      }
-
-      renderEbookCards(ebooks.length ? ebooks : defaultEbooks);
-    }
-
-    async function createNewEbook() {
-      const title = prompt("Ebook title:");
-      if (!title) return;
-
-      try {
-        await addDoc(collection(db, "ebooks"), {
-          title: title.trim(),
-          description: "Add a short ebook description here.",
-          thbDisplay: "฿490",
-          usdDisplay: "$15.00",
-          cover: "assets/ebooks/beginner-thai-cover.jpg",
-          samples: [
-            "assets/ebooks/beginner-thai-sample-1.jpg",
-            "assets/ebooks/beginner-thai-sample-2.jpg",
-            "assets/ebooks/beginner-thai-sample-3.jpg",
-            "assets/ebooks/beginner-thai-sample-4.jpg"
-          ],
-          pdfs: [
-            {
-              title: "Ebook PDF",
-              url: "assets/ebooks/beginner-thai-ebook.pdf"
-            }
-          ],
-          teacherId: currentUser.uid,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-
-        await loadProfileEbooks();
-      } catch (error) {
-        alert(error.message);
-      }
+      renderEbookCards(defaultEbooks);
     }
 
     function renderCourseCards(courses = []) {

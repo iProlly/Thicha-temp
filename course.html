@@ -15,8 +15,8 @@
   <header class="site-header">
     <nav class="navbar container" aria-label="Course navigation">
       <a href="index.html" class="logo" aria-label="Thicha home">
-        <span class="logo-mark">TH</span>
-        <span>Thicha</span>
+        <img src="assets/logo.png" alt="Thai Teacher Thicha Logo" class="site-logo">
+        <span>Thai Teacher Thicha</span>
       </a>
       <div class="profile-header-actions">
         <a href="profile.html" class="btn btn-small btn-login">Profile</a>
@@ -75,9 +75,9 @@
                     <p class="eyebrow">Quiz builder</p>
                     <h3>Questions</h3>
                   </div>
-                  <button type="button" class="add-content-block-btn" id="add-quiz-question-btn">+ Add Question</button>
                 </div>
                 <div class="quiz-question-editor-list" id="quiz-question-editor-list"></div>
+                <button type="button" class="add-content-block-btn" id="add-quiz-question-btn">+ Add Question</button>
               </div>
 
               <div class="add-block-area">
@@ -86,6 +86,7 @@
                   <button type="button" data-block-type="text">Textbox</button>
                   <button type="button" data-block-type="video">Add Video</button>
                   <button type="button" data-block-type="image">Add Picture</button>
+                  <button type="button" data-block-type="file">Add File</button>
                 </div>
               </div>
 
@@ -97,6 +98,10 @@
             </form>
           </div>
         </article>
+
+        <article class="course-main-card course-navigation-card" id="course-navigation-card" hidden>
+          <div id="course-navigation-area"></div>
+        </article>
       </section>
     </section>
   </main>
@@ -104,6 +109,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
     import {
       getFirestore,
       doc,
@@ -126,6 +132,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get("id") || "beginner-thai-course";
@@ -144,6 +151,8 @@
     const deleteModuleBtn = document.getElementById("delete-module-btn");
     const editorForm = document.getElementById("inline-module-editor");
     const moduleNav = document.getElementById("module-nav");
+    const courseNavigationCard = document.getElementById("course-navigation-card");
+    const courseNavigationArea = document.getElementById("course-navigation-area");
     const courseShell = document.querySelector(".course-shell");
     const sidebarToggle = document.getElementById("course-sidebar-toggle");
 
@@ -178,10 +187,12 @@
     function normalizeBlocks(item) {
       if (Array.isArray(item?.blocks)) {
         return item.blocks
-          .filter((block) => block && ["text", "video", "image"].includes(block.type))
+          .filter((block) => block && ["text", "video", "image", "file"].includes(block.type))
           .map((block) => ({
             type: block.type,
-            value: block.value || block.url || ""
+            value: block.value || block.url || "",
+            name: block.name || block.fileName || "",
+            path: block.path || ""
           }));
       }
 
@@ -211,9 +222,16 @@
             }))
           : [];
 
+        const audio = question?.audio && question.audio.url ? {
+          url: question.audio.url || "",
+          name: question.audio.name || "Audio question",
+          path: question.audio.path || ""
+        } : null;
+
         return {
           type,
           prompt: question?.prompt || `Question ${index + 1}`,
+          audio,
           options: type === "mcq" ? (options.length ? options : [
             { text: "Option 1", correct: true },
             { text: "Option 2", correct: false }
@@ -520,8 +538,24 @@
         return `<div class="content-image-block"><img src="${escapeHtml(value)}" alt="Course content image" /></div>`;
       }
 
+      if (block.type === "file") {
+        if (!value) return '<div class="empty-block-state">No file uploaded yet.</div>';
+        const fileName = block.name || value.split("/").pop() || "Course material";
+        return `<a class="content-file-block" href="${escapeHtml(value)}" target="_blank" rel="noopener" download><span>FILE</span><strong>${escapeHtml(fileName)}</strong><small>Open or download</small></a>`;
+      }
+
       const richText = isProbablyPlainText(value) ? plainTextToHtml(value || "Empty textbox.") : sanitizeRichText(value || "Empty textbox.");
       return `<div class="module-text-display rich-text-display">${richText}</div>`;
+    }
+
+    function renderQuestionAudio(question) {
+      if (!question?.audio?.url) return "";
+      return `
+        <div class="quiz-audio-player">
+          <strong>${escapeHtml(question.audio.name || "Audio question")}</strong>
+          <audio controls preload="metadata" src="${escapeHtml(question.audio.url)}"></audio>
+        </div>
+      `;
     }
 
     function renderQuizStudentView(quiz) {
@@ -534,9 +568,10 @@
       const questionsHtml = shuffled.map((question, displayIndex) => {
         const name = `quiz-q-${question.originalIndex}`;
         const prompt = `<h3>${displayIndex + 1}. ${escapeHtml(question.prompt)}</h3>`;
+        const audio = renderQuestionAudio(question);
 
         if (question.type === "written") {
-          return `<div class="quiz-question" data-question-index="${question.originalIndex}" data-question-type="written">${prompt}<textarea class="quiz-written-answer" name="${name}" placeholder="Write your answer here..."></textarea></div>`;
+          return `<div class="quiz-question" data-question-index="${question.originalIndex}" data-question-type="written">${prompt}${audio}<textarea class="quiz-written-answer" name="${name}" placeholder="Write your answer here..."></textarea></div>`;
         }
 
         const optionsHtml = question.options.map((option, optionIndex) => `
@@ -546,7 +581,7 @@
           </label>
         `).join("");
 
-        return `<div class="quiz-question" data-question-index="${question.originalIndex}" data-question-type="mcq">${prompt}<div class="quiz-options">${optionsHtml}</div></div>`;
+        return `<div class="quiz-question" data-question-index="${question.originalIndex}" data-question-type="mcq">${prompt}${audio}<div class="quiz-options">${optionsHtml}</div></div>`;
       }).join("");
 
       return `
@@ -590,6 +625,85 @@
       });
     }
 
+    function getFlatCourseItems() {
+      const items = [];
+      (currentCourse.modules || []).forEach((module, moduleIndex) => {
+        items.push({
+          moduleIndex,
+          submoduleIndex: null,
+          title: module.title || `Module ${moduleIndex + 1}`,
+          label: "Module"
+        });
+
+        (module.submodules || []).forEach((submodule, submoduleIndex) => {
+          items.push({
+            moduleIndex,
+            submoduleIndex,
+            title: submodule.title || `Submodule ${submoduleIndex + 1}`,
+            label: submodule.kind === "quiz" ? "Quiz" : "Submodule"
+          });
+        });
+      });
+      return items;
+    }
+
+    function getCurrentFlatIndex(items) {
+      return items.findIndex((item) => item.moduleIndex === selectedModuleIndex && item.submoduleIndex === selectedSubmoduleIndex);
+    }
+
+    function goToCoursePart(moduleIndex, submoduleIndex) {
+      if (submoduleIndex === null) {
+        selectModule(moduleIndex);
+      } else {
+        selectSubmodule(moduleIndex, submoduleIndex);
+      }
+    }
+
+    function renderPartNavigation() {
+      const items = getFlatCourseItems();
+      const currentIndex = getCurrentFlatIndex(items);
+      if (currentIndex === -1 || items.length <= 1) return "";
+
+      const previous = items[currentIndex - 1] || null;
+      const next = items[currentIndex + 1] || null;
+      if (!previous && !next) return "";
+
+      const previousButton = previous
+        ? `<button type="button" class="part-nav-btn" data-module-index="${previous.moduleIndex}" data-submodule-index="${previous.submoduleIndex === null ? "" : previous.submoduleIndex}"><span>Previous</span><strong>${escapeHtml(previous.title)}</strong></button>`
+        : `<div class="part-nav-empty"></div>`;
+
+      const nextButton = next
+        ? `<button type="button" class="part-nav-btn" data-module-index="${next.moduleIndex}" data-submodule-index="${next.submoduleIndex === null ? "" : next.submoduleIndex}"><span>Next</span><strong>${escapeHtml(next.title)}</strong></button>`
+        : `<div class="part-nav-empty"></div>`;
+
+      return `<div class="course-part-navigation">${previousButton}${nextButton}</div>`;
+    }
+
+    function renderNavigationCard() {
+      if (!courseNavigationCard || !courseNavigationArea) return;
+      const navigationHtml = renderPartNavigation();
+      courseNavigationArea.innerHTML = navigationHtml;
+      courseNavigationCard.hidden = !navigationHtml;
+      bindPartNavigation();
+    }
+
+    function hideNavigationCard() {
+      if (!courseNavigationCard || !courseNavigationArea) return;
+      courseNavigationArea.innerHTML = "";
+      courseNavigationCard.hidden = true;
+    }
+
+    function bindPartNavigation() {
+      if (!courseNavigationArea) return;
+      courseNavigationArea.querySelectorAll(".part-nav-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          const moduleIndex = Number(button.dataset.moduleIndex);
+          const submoduleIndex = button.dataset.submoduleIndex === "" ? null : Number(button.dataset.submoduleIndex);
+          goToCoursePart(moduleIndex, submoduleIndex);
+        });
+      });
+    }
+
     function renderSelectedContent() {
       const selected = getSelectedItem();
       const blocksDisplay = document.getElementById("module-blocks-display");
@@ -599,6 +713,7 @@
         blocksDisplay.innerHTML = canEditCourse()
           ? "Use + Add Module in the sidebar to create a module."
           : "This course does not have module content yet.";
+        hideNavigationCard();
         return;
       }
 
@@ -607,16 +722,19 @@
       if (selected.item.kind === "quiz") {
         blocksDisplay.innerHTML = renderQuizStudentView(selected.item);
         bindStudentQuizSubmit(selected.item);
+        renderNavigationCard();
         return;
       }
 
       const blocks = normalizeBlocks(selected.item);
       if (!blocks.length) {
         blocksDisplay.innerHTML = `<div class="empty-block-state">No ${selected.label.toLowerCase()} content added yet.</div>`;
+        renderNavigationCard();
         return;
       }
 
       blocksDisplay.innerHTML = blocks.map(renderBlockView).join("");
+      renderNavigationCard();
     }
 
     function renderModuleEditor() {
@@ -649,6 +767,7 @@
     function blockLabel(type) {
       if (type === "video") return "Video URL";
       if (type === "image") return "Picture URL";
+      if (type === "file") return "File Upload";
       return "Textbox";
     }
 
@@ -659,13 +778,18 @@
         blocks = [{ type: "text", value: "" }];
       }
 
-      blocks.forEach((block) => addBlockEditor(block.type, block.value));
+      blocks.forEach((block) => addBlockEditor(block.type, block.type === "file" ? block : block.value));
     }
 
     function addBlockEditor(type, value = "") {
       const block = document.createElement("div");
       block.className = "content-block-editor";
       block.dataset.blockType = type;
+      if (typeof value === "object" && value !== null) {
+        block.dataset.fileName = value.name || "";
+        block.dataset.filePath = value.path || "";
+        value = value.value || "";
+      }
 
       const header = document.createElement("div");
       header.className = "content-block-editor-header";
@@ -715,6 +839,63 @@
         });
 
         block.append(toolbar, editor);
+      } else if (type === "file") {
+        const uploadBox = document.createElement("label");
+        uploadBox.className = "file-upload-dropzone";
+
+        const input = document.createElement("input");
+        input.type = "file";
+        input.className = "content-block-input file-block-input";
+        input.multiple = true;
+        input.dataset.existingUrl = value || "";
+        input.dataset.existingName = block.dataset.fileName || "";
+        input.dataset.existingPath = block.dataset.filePath || "";
+        input.accept = ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.png,.jpg,.jpeg,.zip";
+
+        const icon = document.createElement("span");
+        icon.className = "file-upload-icon";
+        icon.textContent = "FILE";
+
+        const title = document.createElement("strong");
+        title.textContent = "Drop files here or click to upload";
+
+        const note = document.createElement("small");
+        note.className = "file-upload-note";
+        note.textContent = value ? `Current file: ${block.dataset.fileName || "Uploaded material"}` : "PDF, DOCX, PPTX, ZIP, images, or text files";
+
+        function updateSelectedFiles() {
+          const names = Array.from(input.files || []).map((file) => file.name).join(", ");
+          note.textContent = names || (value ? `Current file: ${block.dataset.fileName || "Uploaded material"}` : "PDF, DOCX, PPTX, ZIP, images, or text files");
+        }
+
+        input.addEventListener("change", updateSelectedFiles);
+
+        ["dragenter", "dragover"].forEach((eventName) => {
+          uploadBox.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            uploadBox.classList.add("drag-over");
+          });
+        });
+
+        ["dragleave", "drop"].forEach((eventName) => {
+          uploadBox.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            uploadBox.classList.remove("drag-over");
+          });
+        });
+
+        uploadBox.addEventListener("drop", (event) => {
+          const droppedFiles = Array.from(event.dataTransfer?.files || []);
+          if (!droppedFiles.length) return;
+
+          const transfer = new DataTransfer();
+          droppedFiles.forEach((file) => transfer.items.add(file));
+          input.files = transfer.files;
+          updateSelectedFiles();
+        });
+
+        uploadBox.append(input, icon, title, note);
+        block.appendChild(uploadBox);
       } else {
         const input = document.createElement("input");
         input.type = "url";
@@ -738,6 +919,85 @@
         questions = [{ type: "mcq", prompt: "", options: [{ text: "", correct: true }, { text: "", correct: false }] }];
       }
       questions.forEach((question) => addQuestionEditor(question));
+    }
+
+    function createAudioQuestionUploader(audio = null) {
+      const wrap = document.createElement("div");
+      wrap.className = "quiz-audio-editor";
+
+      const title = document.createElement("strong");
+      title.textContent = "Question audio (optional)";
+
+      const uploadBox = document.createElement("label");
+      uploadBox.className = "file-upload-dropzone quiz-audio-dropzone";
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.className = "quiz-audio-input";
+      input.accept = "audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac";
+      input.dataset.existingUrl = audio?.url || "";
+      input.dataset.existingName = audio?.name || "";
+      input.dataset.existingPath = audio?.path || "";
+
+      const icon = document.createElement("span");
+      icon.className = "file-upload-icon";
+      icon.textContent = "AUDIO";
+
+      const label = document.createElement("strong");
+      label.textContent = "Drop audio here or click to upload";
+
+      const note = document.createElement("small");
+      note.className = "file-upload-note";
+      note.textContent = audio?.name ? `Current audio: ${audio.name}` : "MP3, WAV, M4A, AAC, OGG, or FLAC";
+
+      const removeAudioButton = document.createElement("button");
+      removeAudioButton.type = "button";
+      removeAudioButton.className = "remove-content-block-btn quiz-audio-remove-btn";
+      removeAudioButton.textContent = "Remove Audio";
+      removeAudioButton.hidden = !audio?.url;
+
+      function updateSelectedAudio() {
+        const file = input.files?.[0];
+        note.textContent = file?.name || (input.dataset.existingUrl ? `Current audio: ${input.dataset.existingName || "Audio question"}` : "MP3, WAV, M4A, AAC, OGG, or FLAC");
+        removeAudioButton.hidden = !(file || input.dataset.existingUrl);
+      }
+
+      input.addEventListener("change", updateSelectedAudio);
+
+      removeAudioButton.addEventListener("click", () => {
+        input.value = "";
+        input.dataset.existingUrl = "";
+        input.dataset.existingName = "";
+        input.dataset.existingPath = "";
+        updateSelectedAudio();
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        uploadBox.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          uploadBox.classList.add("drag-over");
+        });
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        uploadBox.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          uploadBox.classList.remove("drag-over");
+        });
+      });
+
+      uploadBox.addEventListener("drop", (event) => {
+        const file = event.dataTransfer?.files?.[0];
+        if (!file) return;
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+        updateSelectedAudio();
+      });
+
+      uploadBox.append(input, icon, label, note);
+      wrap.append(title, uploadBox, removeAudioButton);
+      return wrap;
     }
 
     function addQuestionEditor(question = { type: "mcq", prompt: "", options: [] }) {
@@ -765,6 +1025,8 @@
       promptInput.placeholder = "Question text...";
       promptInput.value = question.prompt || "";
 
+      const audioUploader = createAudioQuestionUploader(question.audio || null);
+
       const optionsBox = document.createElement("div");
       optionsBox.className = "quiz-option-editor-list";
 
@@ -787,7 +1049,7 @@
       typeSelect.addEventListener("change", syncType);
       (question.options?.length ? question.options : [{ text: "", correct: true }, { text: "", correct: false }]).forEach((option) => addOptionEditor(optionsBox, option));
 
-      card.append(header, promptInput, optionsBox, addOptionButton);
+      card.append(header, promptInput, audioUploader, optionsBox, addOptionButton);
       quizQuestionEditorList.appendChild(card);
       syncType();
     }
@@ -820,42 +1082,110 @@
       optionsBox.appendChild(row);
     }
 
-    function collectQuizQuestions() {
-      return Array.from(quizQuestionEditorList.querySelectorAll(".quiz-question-editor-card"))
-        .map((card) => {
-          const type = card.querySelector(".quiz-question-type")?.value === "written" ? "written" : "mcq";
-          const prompt = card.querySelector(".quiz-question-prompt")?.value.trim() || "";
-          const options = Array.from(card.querySelectorAll(".quiz-option-editor-row"))
-            .map((row) => ({
-              text: row.querySelector(".quiz-option-text")?.value.trim() || "",
-              correct: Boolean(row.querySelector(".quiz-option-correct")?.checked)
-            }))
-            .filter((option) => option.text);
+    async function collectQuizQuestions() {
+      const collected = [];
+      const cards = Array.from(quizQuestionEditorList.querySelectorAll(".quiz-question-editor-card"));
 
-          return { type, prompt, options: type === "mcq" ? options : [] };
-        })
-        .filter((question) => question.prompt && (question.type === "written" || question.options.length >= 2));
+      for (const card of cards) {
+        const type = card.querySelector(".quiz-question-type")?.value === "written" ? "written" : "mcq";
+        const prompt = card.querySelector(".quiz-question-prompt")?.value.trim() || "";
+        const audioInput = card.querySelector(".quiz-audio-input");
+        const audioFile = audioInput?.files?.[0] || null;
+        let audio = null;
+
+        if (audioFile) {
+          const uploadedAudio = await uploadCourseFile(audioFile, "audio");
+          audio = {
+            url: uploadedAudio.value,
+            name: uploadedAudio.name,
+            path: uploadedAudio.path
+          };
+        } else if (audioInput?.dataset.existingUrl) {
+          audio = {
+            url: audioInput.dataset.existingUrl,
+            name: audioInput.dataset.existingName || "Audio question",
+            path: audioInput.dataset.existingPath || ""
+          };
+        }
+
+        const options = Array.from(card.querySelectorAll(".quiz-option-editor-row"))
+          .map((row) => ({
+            text: row.querySelector(".quiz-option-text")?.value.trim() || "",
+            correct: Boolean(row.querySelector(".quiz-option-correct")?.checked)
+          }))
+          .filter((option) => option.text);
+
+        if (prompt && (type === "written" || options.length >= 2)) {
+          collected.push({
+            type,
+            prompt,
+            audio,
+            options: type === "mcq" ? options : []
+          });
+        }
+      }
+
+      return collected;
     }
 
-    function collectEditorBlocks() {
-      return Array.from(blockEditorList.querySelectorAll(".content-block-editor"))
-        .map((block) => {
-          const type = block.dataset.blockType;
-          const input = block.querySelector(".content-block-input");
-          const inputValue = type === "text"
-            ? sanitizeRichText(input?.innerHTML || "")
-            : (input?.value.trim() || "");
-          return {
+    function safeFileName(name) {
+      return String(name || "course-material")
+        .replace(/[^a-zA-Z0-9._-]/g, "-")
+        .replace(/-+/g, "-");
+    }
+
+    async function uploadCourseFile(file, folder = "materials") {
+      const filePath = `courses/${courseId}/${folder}/${Date.now()}-${safeFileName(file.name)}`;
+      const fileRef = storageRef(storage, filePath);
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      return { type: "file", value: url, name: file.name, path: filePath };
+    }
+
+    async function collectEditorBlocks() {
+      const collected = [];
+      const editors = Array.from(blockEditorList.querySelectorAll(".content-block-editor"));
+
+      for (const block of editors) {
+        const type = block.dataset.blockType;
+        const input = block.querySelector(".content-block-input");
+
+        if (type === "file") {
+          const files = Array.from(input?.files || []);
+          if (files.length) {
+            for (const file of files) {
+              collected.push(await uploadCourseFile(file));
+            }
+          } else if (input?.dataset.existingUrl) {
+            collected.push({
+              type: "file",
+              value: input.dataset.existingUrl,
+              name: input.dataset.existingName || "Course material",
+              path: input.dataset.existingPath || ""
+            });
+          }
+          continue;
+        }
+
+        const inputValue = type === "text"
+          ? sanitizeRichText(input?.innerHTML || "")
+          : (input?.value.trim() || "");
+
+        if (type && inputValue) {
+          collected.push({
             type,
             value: type === "video" ? normalizeVideoUrl(inputValue) : inputValue
-          };
-        })
-        .filter((block) => block.type && block.value);
+          });
+        }
+      }
+
+      return collected;
     }
 
     function openInlineEditor() {
       if (!canEditCourse()) return;
       renderModuleEditor();
+      hideNavigationCard();
       moduleViewArea.style.display = "none";
       inlineModuleEditor.classList.add("active");
       document.getElementById("edit-module-title").focus();
@@ -864,6 +1194,7 @@
     function closeInlineEditor() {
       moduleViewArea.style.display = "block";
       inlineModuleEditor.classList.remove("active");
+      renderNavigationCard();
     }
 
     async function saveCourseModules() {
@@ -1060,30 +1391,45 @@
         return;
       }
 
-      selected.item.title = title;
+      const submitButton = editorForm.querySelector('button[type="submit"]');
+      const originalSubmitText = submitButton?.textContent || "Save Module";
+      const editorButtons = Array.from(editorForm.querySelectorAll("button"));
 
-      if (selected.item.kind === "quiz") {
-        const questions = collectQuizQuestions();
-        if (!questions.length) {
-          alert("Please add at least one valid quiz question.");
-          return;
+      try {
+        editorButtons.forEach((button) => { button.disabled = true; });
+        if (submitButton) submitButton.textContent = "Uploading / Saving...";
+
+        selected.item.title = title;
+
+        if (selected.item.kind === "quiz") {
+          const questions = await collectQuizQuestions();
+          if (!questions.length) {
+            alert("Please add at least one valid quiz question.");
+            return;
+          }
+          selected.item.questions = questions;
+          selected.item.blocks = [];
+          selected.item.text = "";
+        } else {
+          const blocks = await collectEditorBlocks();
+          if (!blocks.length) {
+            alert("Please add at least one content block.");
+            return;
+          }
+          selected.item.blocks = blocks;
+          selected.item.text = legacyTextFromBlocks(blocks);
         }
-        selected.item.questions = questions;
-        selected.item.blocks = [];
-        selected.item.text = "";
-      } else {
-        const blocks = collectEditorBlocks();
-        if (!blocks.length) {
-          alert("Please add at least one content block.");
-          return;
-        }
-        selected.item.blocks = blocks;
-        selected.item.text = legacyTextFromBlocks(blocks);
+
+        await saveCourseModules();
+        renderCourse();
+        closeInlineEditor();
+      } catch (error) {
+        console.error("Could not save module:", error);
+        alert(`Could not save module. ${error?.message || "Please check Firebase Storage rules and try again."}`);
+      } finally {
+        editorButtons.forEach((button) => { button.disabled = false; });
+        if (submitButton) submitButton.textContent = originalSubmitText;
       }
-
-      await saveCourseModules();
-      renderCourse();
-      closeInlineEditor();
     });
 
     sidebarToggle.addEventListener("click", () => {

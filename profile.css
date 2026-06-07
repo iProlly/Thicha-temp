@@ -1050,3 +1050,16 @@ body.ebook-preview-open {
     height: 70px;
   }
 }
+
+
+/* Ebook delete button */
+.ebook-delete-btn {
+  margin-top: 12px;
+  width: 100%;
+  border-color: #b43636;
+  color: #b43636;
+}
+
+.ebook-delete-btn:hover {
+  background: #fff3f3;
+}
