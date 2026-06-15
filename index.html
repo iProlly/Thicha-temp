@@ -53,7 +53,7 @@
           <h1>Kru Thicha</h1>
           <p class="hero-text">Certified native Thai instructor with over 5 years of specialized experience teaching international students. From beginner foundations to advanced proficiency, I expertly guide students through conversational Thai, reading, writing, and professional business communication with personalized learning approaches.</p>
           <div class="hero-actions">
-            <a href="#pricing" class="btn">Join the Course</a>
+            <a href="#" class="btn hero-join-btn" id="join-course-btn">Join the Course</a>
           </div>
           <div class="hero-stats" aria-label="Course highlights">
             <div><strong>16</strong><span>Chapters</span></div>
@@ -209,14 +209,14 @@
         <h3>Starter Package</h3>
         <p class="package-price">฿7,000 <span>/10 lessons</span></p>
         <p class="package-validity">(Validity 1 month 15 days)</p>
-        <a href="#contact" class="package-btn">Book 10 Lessons</a>
+        <a href="#" class="package-btn book-chat-btn">Book 10 Lessons</a>
       </article>
 
       <article class="package-card">
         <h3>Best Value Package</h3>
         <p class="package-price">฿12,000 <span>/20 lessons</span></p>
         <p class="package-validity">(Validity 3 months)</p>
-        <a href="#contact" class="package-btn">Book 20 Lessons</a>
+        <a href="#" class="package-btn book-chat-btn">Book 20 Lessons</a>
       </article>
 
       <article class="package-card">
@@ -225,7 +225,7 @@
         <p class="package-desc">
           Join relaxed group online lessons – connect, chat, and learn together in a friendly setting (2–3 students).
         </p>
-        <a href="#contact" class="package-btn">Book Now</a>
+        <a href="#" class="package-btn book-chat-btn">Book Now</a>
       </article>
 
     </div>
@@ -440,7 +440,7 @@
       <div class="container final-cta-card">
         <h2>Ready to Speak Thai?</h2>
         <p>Start learning with a friendly course structure and take your first step toward real Thai conversation.</p>
-        <a href="#pricing" class="btn">Sign Up Today</a>
+        <a href="signup.html" class="btn">Sign Up Today</a>
       </div>
     </section>
   </main>
@@ -540,6 +540,37 @@
       });
     });
   </script>
-  <script src="script.js"></script>
+  
+  <script type="module">
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    const authNav = getAuth();
+    let activeIndexUser = authNav.currentUser;
+
+    onAuthStateChanged(authNav, (user) => {
+      activeIndexUser = user;
+    });
+
+    function goToProtectedProfileSection(sectionHash) {
+      window.location.href = activeIndexUser ? `profile.html${sectionHash}` : "login.html";
+    }
+
+    document.getElementById("join-course-btn")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      goToProtectedProfileSection("#courses");
+    });
+
+    document.querySelectorAll(".book-chat-btn").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        goToProtectedProfileSection("#chat");
+      });
+    });
+  </script>
+
+<script src="script.js"></script>
 </body>
 </html>

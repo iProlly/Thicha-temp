@@ -1063,3 +1063,9 @@ body.ebook-preview-open {
 .ebook-delete-btn:hover {
   background: #fff3f3;
 }
+
+
+@media (max-width:900px){
+.profile-header-actions{display:none!important;}
+.profile-header-actions.active{display:flex!important;}
+}

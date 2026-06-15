@@ -18,7 +18,10 @@
         <img src="assets/logo.png" alt="Thai Teacher Thicha Logo" class="site-logo">
         <span>Thai Teacher Thicha</span>
       </a>
-      <div class="profile-header-actions">
+      <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="profile-header-actions" id="profile-header-actions">
         <a href="profile.html" class="btn btn-small btn-login">Profile</a>
         <a href="index.html" class="btn btn-small btn-login">Home</a>
       </div>
@@ -173,7 +176,11 @@
     let selectedModuleIndex = 0;
     let selectedSubmoduleIndex = null;
     let expandedModules = new Set([0]);
-    let isSidebarCollapsed = false;
+    let isSidebarCollapsed = window.innerWidth <= 900;
+
+    if (isSidebarCollapsed) {
+      courseShell.classList.add("sidebar-collapsed");
+    }
 
     function setText(id, value) {
       const element = document.getElementById(id);
@@ -1432,7 +1439,17 @@
       }
     });
 
-    sidebarToggle.addEventListener("click", () => {
+    
+const mobileNavToggle = document.getElementById("mobile-nav-toggle");
+const profileHeaderActions = document.getElementById("profile-header-actions");
+
+if (mobileNavToggle && profileHeaderActions) {
+  mobileNavToggle.addEventListener("click", () => {
+    profileHeaderActions.classList.toggle("active");
+  });
+}
+
+sidebarToggle.addEventListener("click", () => {
       isSidebarCollapsed = !isSidebarCollapsed;
       courseShell.classList.toggle("sidebar-collapsed", isSidebarCollapsed);
       sidebarToggle.innerHTML = isSidebarCollapsed ? "&gt;" : "&lt;";

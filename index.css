@@ -1569,3 +1569,40 @@
 .package-btn{
     margin-top:auto !important;
 }
+
+/* === Index button routing/size fix === */
+/* Keep normal buttons compact on the index page. */
+.btn {
+  min-height: 52px !important;
+  padding: 0 28px !important;
+  font-size: 1rem !important;
+}
+
+/* Keep the nav button small even when global button rules are broad. */
+.btn-small {
+  min-height: 40px !important;
+  padding: 0 18px !important;
+  font-size: 0.9rem !important;
+}
+
+/* Only the hero Join the Course button uses the long pill style. */
+.hero-actions {
+  width: 100%;
+}
+
+.hero-join-btn {
+  width: min(100%, 740px) !important;
+  min-height: 88px !important;
+  padding: 0 56px !important;
+  font-size: clamp(1.4rem, 3vw, 2.05rem) !important;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 680px) {
+  .hero-join-btn {
+    width: 100% !important;
+    min-height: 66px !important;
+    padding: 0 28px !important;
+    font-size: 1.35rem !important;
+  }
+}

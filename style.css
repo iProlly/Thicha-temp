@@ -159,16 +159,22 @@ ul {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 70px;
-  padding: 0 200px;
+  min-height: 52px;
+  padding: 0 28px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--coral), var(--orange));
   color: var(--white);
   font-weight: 800;
   box-shadow: 0 14px 26px rgba(242, 111, 94, 0.24);
   transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
-  font-size: 1.6rem;
+  font-size: 1rem;
   white-space: nowrap;
+}
+
+.btn-hero-wide {
+  min-height: 70px;
+  padding: 0 200px;
+  font-size: 1.6rem;
 }
 
 .btn:hover, .social-btn:hover {
@@ -569,5 +575,102 @@ h3 {
     border: 1px solid var(--brown);
     background: var(--white);
     box-shadow: none;
+  }
+}
+
+/* Keep only the hero Join button wide; all other .btn elements use the normal button size. */
+@media (max-width: 680px) {
+  .btn-hero-wide {
+    width: 100%;
+    padding: 0 28px;
+    font-size: 1.2rem;
+  }
+}
+
+
+/* Proper mobile hamburger */
+.mobile-nav-toggle{
+  display:none;
+}
+
+@media (max-width:900px){
+  .navbar{
+    display:flex;
+    align-items:center;
+  }
+
+  .mobile-nav-toggle{
+    display:flex;
+    width:44px;
+    height:44px;
+    padding:0;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:4px;
+    border:1px solid var(--brown);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+
+  .mobile-nav-toggle span{
+    width:18px;
+    height:2px;
+    background:var(--brown);
+    border-radius:999px;
+    display:block;
+  }
+
+  .profile-header-actions{
+    display:none;
+    position:absolute;
+    right:16px;
+    top:70px;
+    flex-direction:column;
+    background:#fff;
+    border:1px solid var(--line-strong);
+    border-radius:12px;
+    padding:10px;
+    z-index:1200;
+  }
+
+  .profile-header-actions.active{
+    display:flex;
+  }
+}
+
+
+@media (max-width:900px){
+  .navbar{
+    position:relative;
+  }
+
+  .mobile-nav-toggle{
+    margin-left:auto;
+    flex:0 0 44px;
+  }
+
+  .profile-header-actions{
+    display:none !important;
+    position:absolute !important;
+    top:60px !important;
+    right:0 !important;
+    width:170px !important;
+    background:#fffaf0 !important;
+    border:1px solid var(--brown) !important;
+    border-radius:14px !important;
+    padding:10px !important;
+    z-index:9999 !important;
+    flex-direction:column !important;
+    gap:8px !important;
+  }
+
+  .profile-header-actions.active{
+    display:flex !important;
+  }
+
+  .profile-header-actions .btn{
+    width:100%;
   }
 }

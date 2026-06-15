@@ -19,10 +19,10 @@
         <span>Thai Teacher Thicha</span>
       </a>
 
-      <div class="profile-header-actions">
+      <button type="button" class="mobile-nav-toggle" id="mobile-nav-toggle"><span></span><span></span><span></span></button><div class="profile-header-actions" id="profile-header-actions">
         <a href="index.html" class="btn btn-small btn-login">Home</a>
         <button type="button" class="btn btn-small btn-login" id="profile-logout-btn">Log Out</button>
-        <div class="profile-circle" id="dashboard-profile-circle" title="Profile"></div>
+        
       </div>
     </nav>
   </header>
@@ -802,17 +802,32 @@
       if (event.key === "ArrowRight") moveEbookPreview(1);
     });
 
+    function activateDashboardTab(target) {
+      const requestedTab = document.querySelector(`.dashboard-tab[data-tab="${target}"]`);
+      const requestedPanel = document.getElementById(`${target}-panel`);
+
+      if (!requestedTab || !requestedPanel) return;
+
+      tabs.forEach((item) => item.classList.remove("active"));
+      panels.forEach((panel) => panel.classList.remove("active"));
+
+      requestedTab.classList.add("active");
+      requestedPanel.classList.add("active");
+    }
+
+    function activateDashboardTabFromHash() {
+      const target = window.location.hash.replace("#", "");
+      if (target) activateDashboardTab(target);
+    }
+
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
-        const target = tab.dataset.tab;
-
-        tabs.forEach((item) => item.classList.remove("active"));
-        panels.forEach((panel) => panel.classList.remove("active"));
-
-        tab.classList.add("active");
-        document.getElementById(`${target}-panel`).classList.add("active");
+        activateDashboardTab(tab.dataset.tab);
+        history.replaceState(null, "", `#${tab.dataset.tab}`);
       });
     });
+
+    window.addEventListener("hashchange", activateDashboardTabFromHash);
 
     editButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -957,7 +972,23 @@
       });
     });
 
-    onAuthStateChanged(auth, async (user) => {
+    
+const mobileNavToggle=document.getElementById("mobile-nav-toggle");
+const profileHeaderActions=document.getElementById("profile-header-actions");
+if(mobileNavToggle&&profileHeaderActions){
+ mobileNavToggle.addEventListener("click",(e)=>{
+  e.stopPropagation();
+  profileHeaderActions.classList.toggle("active");
+ });
+ document.addEventListener("click",(e)=>{
+  if(!profileHeaderActions.contains(e.target)&&!mobileNavToggle.contains(e.target)){
+   profileHeaderActions.classList.remove("active");
+  }
+ });
+}
+
+onAuthStateChanged(auth, async (user) => {
+
       if (!user) {
         window.location.href = "login.html";
         return;
@@ -993,6 +1024,7 @@
       await loadProfileCourses();
       await loadProfileEbooks();
       await loadChatContacts();
+      activateDashboardTabFromHash();
     });
   </script>
 </body>
