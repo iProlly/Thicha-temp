@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment | Thicha</title>
-  <meta name="description" content="Test payment page for Thicha courses and ebooks with Stripe, PayPal, and Wise test mode." />
+  <meta name="description" content="Payment page for Thicha courses and ebooks with Stripe, PayPal, and Wise." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
       <article class="payment-card">
         <p class="eyebrow">Test payment</p>
         <h1 id="course-title">Loading course...</h1>
-        <p class="payment-lead" id="course-description">Choose Card, QR Payment, PayPal, or Wise Test to complete the test payment.</p>
+        <p class="payment-lead" id="course-description">Choose Card, QR Payment, PayPal, or Wise to complete the payment.</p>
 
         <div class="payment-summary">
           <span>Amount</span>
@@ -41,7 +41,7 @@
           <button type="button" class="payment-tab active" data-method="card">Card</button>
           <button type="button" class="payment-tab" data-method="qr">QR Payment</button>
           <button type="button" class="payment-tab" data-method="paypal">PayPal</button>
-          <button type="button" class="payment-tab" data-method="wise">Wise Test</button>
+          <button type="button" class="payment-tab" data-method="wise">Wise</button>
         </div>
 
         <section class="payment-method-panel active" id="card-panel">
@@ -69,14 +69,36 @@
         </section>
 
         <section class="payment-method-panel" id="wise-panel">
-          <div class="stripe-panel">
-            <h2>Pay by Wise Test</h2>
-            <p>This is a localhost test button because Wise Sandbox Payment Links are currently failing. It simulates a successful Wise payment and unlocks the selected course or ebook in Firestore.</p>
-            <button type="button" class="btn full-width" id="pay-wise-test-btn">Test Wise Payment</button>
+          <div class="stripe-panel wise-panel-content">
+            <h2>Pay by Wise</h2>
+            <div class="wise-bank-details" aria-label="Wise bank transfer details">
+              <div class="wise-bank-row">
+                <span>Bank</span>
+                <strong>Kasikorn Bank</strong>
+              </div>
+              <div class="wise-bank-row">
+                <span>Account Number</span>
+                <strong>0158445751</strong>
+              </div>
+              <div class="wise-bank-row">
+                <span>Account Name</span>
+                <strong>Kanthicha Butwong</strong>
+              </div>
+              <div class="wise-bank-row">
+                <span>Email</span>
+                <strong><a href="mailto:mildy.mono@gmail.com">mildy.mono@gmail.com</a></strong>
+              </div>
+              <div class="wise-bank-row">
+                <span>Currency</span>
+                <strong>THB (via a Wise account)</strong>
+              </div>
+            </div>
+            <p class="wise-transfer-note">Please include all bank details when making the transfer.</p>
+            <button type="button" class="btn full-width" id="notify-wise-payment-btn">Notify Payment</button>
           </div>
         </section>
 
-        <p class="payment-note">Localhost setup: website on port 5500, payment API on port 4242. Card/QR uses Stripe; PayPal uses PayPal Checkout; Wise Test simulates a successful Wise payment for local testing only.</p>
+        <p class="payment-note">Localhost setup: website on port 5500, payment API on port 4242. Card/QR uses Stripe; PayPal uses PayPal Checkout; Wise sends a manual payment notification.</p>
         <p class="payment-status" id="payment-status"></p>
       </article>
     </section>
@@ -183,7 +205,7 @@
     const payQrBtn = document.getElementById("pay-qr-btn");
     const paymentStatus = document.getElementById("payment-status");
     const paypalButtonsContainer = document.getElementById("paypal-buttons");
-    const payWiseTestBtn = document.getElementById("pay-wise-test-btn");
+    const notifyWisePaymentBtn = document.getElementById("notify-wise-payment-btn");
 
     let currentUser = null;
     let handledStripeReturn = false;
@@ -282,24 +304,40 @@
     payCardBtn.addEventListener("click", () => startStripeCheckout("card"));
     payQrBtn.addEventListener("click", () => startStripeCheckout("promptpay"));
 
-    async function startWiseTestPayment() {
+    async function notifyWisePayment() {
       if (!currentUser) {
         window.location.href = "login.html";
         return;
       }
 
-      payWiseTestBtn.disabled = true;
-      setStatus("Simulating Wise payment for localhost testing...");
+      notifyWisePaymentBtn.disabled = true;
+      setStatus("Sending Wise payment notification...");
 
       try {
-        await finishPaidItem(item.id, itemType);
+        const result = await fetch(`${API_BASE}/api/notify-wise-payment`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(await getAuthHeader())
+          },
+          body: JSON.stringify({
+            itemId: item.id,
+            itemType,
+            price: item.thbDisplay
+          })
+        });
+
+        const data = await result.json();
+        if (!result.ok) throw new Error(data.error || "Could not notify Wise payment.");
+
+        setStatus("Wise payment notification sent. The teacher will manually verify your transfer before enrollment. Now you can go back to the main page.", "success");
       } catch (error) {
-        setStatus(error.message || "Could not complete Wise test payment.", "error");
-        payWiseTestBtn.disabled = false;
+        setStatus(error.message || "Could not notify Wise payment.", "error");
+        notifyWisePaymentBtn.disabled = false;
       }
     }
 
-    payWiseTestBtn.addEventListener("click", startWiseTestPayment);
+    notifyWisePaymentBtn.addEventListener("click", notifyWisePayment);
 
     async function loadPayPalButtons() {
       if (paypalLoaded) return;

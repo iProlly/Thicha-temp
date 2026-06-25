@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = process.env.PORT || 4242;
@@ -61,6 +62,18 @@ function getBearerToken(req) {
   return authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 }
 
+function decodeJwtPayload(token) {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return {};
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+  } catch (error) {
+    return {};
+  }
+}
+
 function requireLoginToken(req, res, next) {
   const token = getBearerToken(req);
 
@@ -71,6 +84,7 @@ function requireLoginToken(req, res, next) {
   // Localhost test mode only.
   // Production should verify this token with Firebase Admin and enroll users from the backend/webhook.
   req.firebaseIdToken = token;
+  req.firebaseUser = decodeJwtPayload(token);
   next();
 }
 
@@ -191,6 +205,24 @@ async function paypalRequest(path, body = null) {
   return data;
 }
 
+function requireGmailConfig() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error("Missing GMAIL_USER or GMAIL_APP_PASSWORD in .env");
+  }
+}
+
+function createMailTransporter() {
+  requireGmailConfig();
+
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD
+    }
+  });
+}
+
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
@@ -198,7 +230,8 @@ app.get("/api/health", (req, res) => {
     payments: {
       stripeCard: true,
       stripeQrPayment: true,
-      paypalConfigured: Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET)
+      paypalConfigured: Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET),
+      wiseNotifyConfigured: Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
     }
   });
 });
@@ -375,6 +408,49 @@ app.post("/api/capture-paypal-order", requireLoginToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({
       error: error.message || "Could not capture PayPal order."
+    });
+  }
+});
+
+app.post("/api/notify-wise-payment", requireLoginToken, async (req, res) => {
+  try {
+    const {itemId, itemType: rawItemType, price} = req.body;
+    const itemType = rawItemType === "ebook" ? "ebook" : "course";
+    const item = getItemOrFail(itemId, itemType);
+
+
+    if (!itemId || !item) {
+      return res.status(400).json({ error: `Invalid ${itemType}.` });
+    }
+
+    const studentUid = req.firebaseUser.user_id || req.firebaseUser.uid || req.firebaseUser.sub || "Unknown UID";
+    const studentEmail = req.firebaseUser.email || "Unknown email";
+    const notifiedAt = new Date().toISOString();
+    const notifyEmail = process.env.WISE_NOTIFY_EMAIL || "peterisland.candy@gmail.com";
+
+    const transporter = createMailTransporter();
+    await transporter.sendMail({
+      from: `Thicha Wise Notification <${process.env.GMAIL_USER}>`,
+      to: notifyEmail,
+      subject: `Wise payment notification: ${itemType} ${itemId}`,
+      text: [
+        "A student clicked Notify Payment for a Wise transfer.",
+        "",
+        `Student Firebase UID: ${studentUid}`,
+        `Student email: ${studentEmail}`,
+        `Item ID: ${itemId}`,
+        `Item Type: ${itemType}`,
+        `Expected Price: ${price || item.thbDisplay}`,
+        `Date/time: ${notifiedAt}`,
+        "",
+        "Please manually verify the Wise transfer before enrolling the student. Do NOT enroll until the transfer is confirmed."
+      ].join("\n")
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message || "Could not send Wise payment notification."
     });
   }
 });
