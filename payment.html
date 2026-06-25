@@ -88,6 +88,7 @@
     import {
       getFirestore,
       doc,
+      getDoc,
       setDoc,
       arrayUnion,
       serverTimestamp
@@ -143,6 +144,36 @@
     const item = itemType === "ebook"
       ? (ebooks[ebookId] || ebooks["beginner-thai-ebook"])
       : (courses[courseId] || courses["beginner-thai-course"]);
+
+    function bahtDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `฿${number.toLocaleString("en-US")}` : `฿${raw}`;
+    }
+
+    function usdDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `$${number.toFixed(2)}` : `$${raw}`;
+    }
+
+    async function applyPaymentPricing() {
+      try {
+        const pricingSnap = await getDoc(doc(db, "siteSettings", "pricing"));
+        if (!pricingSnap.exists()) return;
+        const pricing = pricingSnap.data();
+        const group = itemType === "ebook" ? pricing.ebooks : pricing.courses;
+        const savedPrice = group?.[item.id];
+        if (!savedPrice) return;
+        item.thbDisplay = bahtDisplay(savedPrice.thb) || item.thbDisplay;
+        item.usdDisplay = usdDisplay(savedPrice.usd) || item.usdDisplay;
+      } catch (error) {
+        console.warn("Could not load payment pricing:", error);
+      }
+    }
+
     const stripeSessionId = params.get("stripe_session_id");
     const stripeCancelled = params.get("stripe_cancelled");
 
@@ -158,10 +189,16 @@
     let handledStripeReturn = false;
     let paypalLoaded = false;
 
-    document.getElementById("course-title").textContent = item.title;
-    document.getElementById("course-description").textContent = item.description;
-    document.getElementById("course-price").textContent = `${item.thbDisplay} / ${item.usdDisplay} PayPal or Wise`;
-    document.querySelector(".eyebrow").textContent = itemType === "ebook" ? "Test ebook payment" : "Test payment";
+    function renderPaymentItem() {
+      document.getElementById("course-title").textContent = item.title;
+      document.getElementById("course-description").textContent = item.description;
+      document.getElementById("course-price").textContent = `${item.thbDisplay} / ${item.usdDisplay} PayPal or Wise`;
+      document.querySelector(".eyebrow").textContent = itemType === "ebook" ? "Test ebook payment" : "Test payment";
+    }
+
+    renderPaymentItem();
+    await applyPaymentPricing();
+    renderPaymentItem();
 
     function setStatus(message, type = "") {
       paymentStatus.textContent = message;

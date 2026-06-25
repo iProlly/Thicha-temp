@@ -36,7 +36,7 @@
     <section class="available-course-grid container" aria-label="Available courses">
       <article class="available-course-card">
         <p class="pricing-label">Complete Beginner Thai Course</p>
-        <h2>฿1,390</h2>
+        <h2 data-course-price="beginner-thai-course">฿1,390 / $39.00</h2>
         <p class="pricing-desc">A friendly course package designed for students who want clear lessons and practical Thai speaking skills.</p>
         <ul>
           <li>10 structured chapters</li>
@@ -48,22 +48,61 @@
         </ul>
         <a href="payment.html?course=beginner-thai-course" class="btn full-width">Buy Now</a>
       </article>
-
-      <article class="available-course-card">
-        <p class="pricing-label">Thai Speaking Practice Course</p>
-        <h2>฿890</h2>
-        <p class="pricing-desc">A practical speaking course for students who want more guided conversation practice.</p>
-        <ul>
-          <li>Daily speaking situations</li>
-          <li>Useful Thai sentence patterns</li>
-          <li>Pronunciation practice</li>
-          <li>Short review activities</li>
-          <li>Lifetime course access</li>
-          <li>Beginner-friendly support</li>
-        </ul>
-        <a href="payment.html?course=thai-speaking-practice" class="btn full-width">Buy Now</a>
-      </article>
     </section>
   </main>
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
+      authDomain: "thicha-d53ba.firebaseapp.com",
+      projectId: "thicha-d53ba",
+      storageBucket: "thicha-d53ba.firebasestorage.app",
+      messagingSenderId: "824342808199",
+      appId: "1:824342808199:web:c989d8e5e13db289bd1a22",
+      measurementId: "G-QFR08VNH39"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function bahtDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `฿${number.toLocaleString("en-US")}` : `฿${raw}`;
+    }
+
+    function usdDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `$${number.toFixed(2)}` : `$${raw}`;
+    }
+
+    try {
+      const pricingSnap = await getDoc(doc(db, "siteSettings", "pricing"));
+      const pricing = pricingSnap.exists() ? pricingSnap.data() : {};
+      document.querySelectorAll("[data-course-price]").forEach((element) => {
+        const key = element.dataset.coursePrice;
+        let price = pricing.courses?.[key];
+        if (!price && pricing.courses){const map={"beginner-thai-course":"Complete Beginner Thai Course","thai-speaking-practice":"Thai Speaking Practice Course"};for(const v of Object.values(pricing.courses)){if(v?.title===map[key]){price=v;break;}}}
+
+        if (!price) return;
+
+        const thb = price.thb ?? price.baht ?? price.THB;
+        const usd = price.usd ?? price.USD;
+
+        element.textContent = [bahtDisplay(thb), usdDisplay(usd)]
+          .filter(Boolean)
+          .join(" / ");
+      });
+    } catch (error) {
+      console.warn("Could not load course pricing:", error);
+    }
+  </script>
 </body>
 </html>

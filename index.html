@@ -247,10 +247,10 @@
       </div>
 
       <div class="pricing-grid-custom">
-        <article class="package-card"><h3>Private 10 Classes</h3><p class="package-price">฿7,000 <span>/10 lessons</span></p><p class="package-validity">(Validity 1 month 15 days)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
-        <article class="package-card"><h3>Private 20 Classes</h3><p class="package-price">฿12,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
-        <article class="package-card"><h3>Semi Group 10 Classes</h3><p class="package-price">฿11,100 <span>/10 lessons</span></p><p class="package-validity">(Validity 1 month 14 days)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
-        <article class="package-card"><h3>Semi Group 20 Classes</h3><p class="package-price">฿20,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
+        <article class="package-card"><h3>Private 10 Classes</h3><p class="package-price" data-private-price="private-10">฿7,000 <span>/10 lessons</span></p><p class="package-validity">(Validity 1 month 15 days)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
+        <article class="package-card"><h3>Private 20 Classes</h3><p class="package-price" data-private-price="private-20">฿12,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
+        <article class="package-card"><h3>Semi Group 10 Classes</h3><p class="package-price" data-private-price="semi-group-10">฿11,100 <span>/10 lessons</span></p><p class="package-validity">(Validity 1 month 14 days)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
+        <article class="package-card"><h3>Semi Group 20 Classes</h3><p class="package-price" data-private-price="semi-group-20">฿20,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
       </div>
     </div>
 </div>
@@ -375,9 +375,44 @@
             <div class="ebook-product-copy" id="ebook-product-copy">
               <h3>Beginner Thai Ebook</h3>
               <p>A simple Thai ebook for beginner learners. It includes clear explanations, useful vocabulary, sample sentences, and practice pages to help you build confidence step by step.</p>
+              <strong class="ebook-product-price" data-ebook-price="beginner-thai-ebook">฿490 / $15.00</strong>
               <a href="profile.html#ebooks" class="btn ebook-product-btn">Buy Ebook</a>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="section-pad promotion-section" id="promotion-section" hidden>
+      <div class="container">
+        <div class="section-heading center promotion-heading">
+          <p class="eyebrow">Promotion</p>
+          <h2>The Big Promotion is here!</h2>
+        </div>
+
+        <div class="promotion-banner-wrap">
+          <img src="" alt="Current promotion" id="promotion-image">
+        </div>
+
+        <div class="promotion-admin-panel" id="promotion-admin-panel" hidden>
+          <div>
+            <p class="eyebrow">Teacher controls</p>
+            <h3>Promotion Banner</h3>
+            <p>Upload a new image or choose whether students and guests can see this promotion.</p>
+          </div>
+
+          <div class="promotion-admin-actions">
+            <label class="promotion-upload-label" for="promotion-image-upload">Choose Image</label>
+            <input type="file" id="promotion-image-upload" accept="image/*">
+
+            <label class="promotion-toggle-label">
+              <input type="checkbox" id="promotion-visible-toggle">
+              <span>Show promotion banner</span>
+            </label>
+          </div>
+
+          <p class="promotion-status" id="promotion-status" aria-live="polite"></p>
         </div>
       </div>
     </section>
@@ -663,6 +698,7 @@
       ebookCopy.innerHTML = `
         <h3>${product.title}</h3>
         <p>${product.description}</p>
+        <strong class="ebook-product-price" data-ebook-price="beginner-thai-ebook">฿490 / $15.00</strong>
         <a href="${product.buyUrl}" class="btn ebook-product-btn">Buy Ebook</a>
       `;
     }
@@ -684,6 +720,233 @@
     document.querySelector(".ebook-preview-prev")?.addEventListener("click", () => moveEbookPreview(-1));
 
     renderEbookProduct();
+  </script>
+
+
+  <script type="module">
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+
+    import { getApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+    const promotionSection = document.getElementById("promotion-section");
+    const promotionImage = document.getElementById("promotion-image");
+    const promotionAdminPanel = document.getElementById("promotion-admin-panel");
+    const promotionUpload = document.getElementById("promotion-image-upload");
+    const promotionToggle = document.getElementById("promotion-visible-toggle");
+    const promotionStatus = document.getElementById("promotion-status");
+
+    const authPromotion = getAuth(getApp());
+    const dbPromotion = getFirestore(getApp());
+    const storagePromotion = getStorage(getApp());
+    const promotionRef = doc(dbPromotion, "siteSettings", "homepagePromotion");
+
+    let promotionSettings = { visible: false, imageUrl: "" };
+    let promotionCanEdit = false;
+
+    function setPromotionStatus(message) {
+      if (promotionStatus) promotionStatus.textContent = message || "";
+    }
+
+    function renderPromotion() {
+      if (!promotionSection || !promotionImage) return;
+
+      const imageUrl = typeof promotionSettings.imageUrl === "string"
+        ? promotionSettings.imageUrl.trim()
+        : "";
+      const hasImage = imageUrl.length > 0;
+      const publicCanSeeBanner = Boolean(promotionSettings.visible) && hasImage;
+
+      promotionSection.hidden = !(publicCanSeeBanner || promotionCanEdit);
+      promotionImage.hidden = !hasImage;
+
+      if (hasImage && promotionImage.src !== imageUrl) {
+        promotionImage.src = imageUrl;
+      }
+
+      if (!hasImage) {
+        promotionImage.removeAttribute("src");
+      }
+
+      if (promotionToggle) {
+        promotionToggle.checked = Boolean(promotionSettings.visible);
+      }
+
+      if (promotionAdminPanel) {
+        promotionAdminPanel.hidden = !promotionCanEdit;
+      }
+    }
+
+    async function loadPromotionSettings(showError = false) {
+      try {
+        const snapshot = await getDoc(promotionRef);
+        promotionSettings = snapshot.exists()
+          ? { visible: false, imageUrl: "", ...snapshot.data() }
+          : { visible: false, imageUrl: "" };
+        renderPromotion();
+      } catch (error) {
+        console.warn("Could not load promotion settings:", error);
+        if (showError) setPromotionStatus("Could not load promotion settings.");
+      }
+    }
+
+    async function userCanEditPromotion(user) {
+      if (!user) return false;
+
+      try {
+        const userSnap = await getDoc(doc(dbPromotion, "users", user.uid));
+        const role = userSnap.exists() ? userSnap.data().role || "student" : "student";
+        return role === "teacher" || role === "admin";
+      } catch (error) {
+        console.warn("Could not check promotion permissions:", error);
+        return false;
+      }
+    }
+
+    loadPromotionSettings(false);
+
+    onAuthStateChanged(authPromotion, async (user) => {
+      promotionCanEdit = await userCanEditPromotion(user);
+      await loadPromotionSettings(promotionCanEdit);
+      if (promotionCanEdit) setPromotionStatus("");
+      renderPromotion();
+    });
+
+    promotionToggle?.addEventListener("change", async () => {
+      if (!promotionCanEdit) return;
+
+      const nextVisible = promotionToggle.checked;
+      const previousVisible = Boolean(promotionSettings.visible);
+      promotionSettings.visible = nextVisible;
+      renderPromotion();
+
+      try {
+        setPromotionStatus("Saving visibility...");
+        await setDoc(promotionRef, {
+          visible: nextVisible,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        await loadPromotionSettings(true);
+        setPromotionStatus("Promotion visibility saved.");
+      } catch (error) {
+        console.warn("Could not save promotion visibility:", error);
+        promotionSettings.visible = previousVisible;
+        renderPromotion();
+        setPromotionStatus(error.message);
+      }
+    });
+
+    promotionUpload?.addEventListener("change", async (event) => {
+      if (!promotionCanEdit) return;
+
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      try {
+        setPromotionStatus("Uploading image...");
+        const imageRef = ref(storagePromotion, "homepage/promotion-banner");
+
+        await uploadBytes(imageRef, file, { contentType: file.type || "image/jpeg" });
+        const imageUrl = await getDownloadURL(imageRef);
+        const nextVisible = promotionToggle?.checked ?? promotionSettings.visible ?? true;
+
+        promotionSettings = {
+          ...promotionSettings,
+          imageUrl,
+          visible: nextVisible
+        };
+        renderPromotion();
+
+        await setDoc(promotionRef, {
+          imageUrl,
+          visible: nextVisible,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        await loadPromotionSettings(true);
+        event.target.value = "";
+        setPromotionStatus("Promotion image updated.");
+      } catch (error) {
+        console.warn("Could not upload promotion image:", error);
+        setPromotionStatus(error.message);
+      }
+    });
+  </script>
+
+
+
+  <script type="module">
+    import { getApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    const defaultPublicPricing = {
+      ebooks: { "beginner-thai-ebook": { thb: "490", usd: "15" } },
+      privateCourses: {
+        "private-10": { thb: "7000", usd: "" },
+        "private-20": { thb: "12000", usd: "" },
+        "semi-group-10": { thb: "11100", usd: "" },
+        "semi-group-20": { thb: "20000", usd: "" }
+      }
+    };
+
+    function bahtDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `฿${number.toLocaleString("en-US")}` : `฿${raw}`;
+    }
+
+    function usdDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `$${number.toFixed(2)}` : `$${raw}`;
+    }
+
+    function priceText(item) {
+      return [bahtDisplay(item?.thb), usdDisplay(item?.usd)].filter(Boolean).join(" / ");
+    }
+
+    try {
+      const dbPricing = getFirestore(getApp());
+      const snap = await getDoc(doc(dbPricing, "siteSettings", "pricing"));
+      const saved = snap.exists() ? snap.data() : {};
+      const pricing = {
+        ebooks: { ...defaultPublicPricing.ebooks, ...(saved.ebooks || {}) },
+        privateCourses: { ...defaultPublicPricing.privateCourses, ...(saved.privateCourses || {}) }
+      };
+
+      document.querySelectorAll("[data-private-price]").forEach((element) => {
+        const key = element.dataset.privatePrice;
+        const price = pricing.privateCourses[key];
+        const suffix = element.querySelector("span")?.outerHTML || "";
+        if (price) element.innerHTML = `${bahtDisplay(price.thb)} ${suffix}`.trim();
+      });
+
+      document.querySelectorAll("[data-ebook-price]").forEach((element) => {
+        const key = element.dataset.ebookPrice;
+        if (pricing.ebooks[key]) element.textContent = priceText(pricing.ebooks[key]);
+      });
+    } catch (error) {
+      console.warn("Could not load public pricing:", error);
+    }
   </script>
 
 <script src="script.js"></script>

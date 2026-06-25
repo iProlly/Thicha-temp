@@ -40,6 +40,8 @@
           <button type="button" class="dashboard-tab active" data-tab="profile">Profile</button>
           <button type="button" class="dashboard-tab" data-tab="courses">My Course</button>
           <button type="button" class="dashboard-tab" data-tab="ebooks">My Ebook</button>
+          <button type="button" class="dashboard-tab teacher-only-tab" data-tab="students" hidden>My Students</button>
+          <button type="button" class="dashboard-tab teacher-only-tab" data-tab="prices" hidden>My Prices</button>
           <button type="button" class="dashboard-tab" data-tab="chat">Chat</button>
           <button type="button" class="dashboard-tab" data-tab="settings">Settings</button>
         </nav>
@@ -124,6 +126,77 @@
           <p class="dashboard-lead" id="ebooks-lead">Browse available ebooks. Click Buy Ebook to open the payment page.</p>
 
           <div class="ebook-card-grid" id="profile-ebook-list"></div>
+        </div>
+
+        <div class="dashboard-panel teacher-only-panel" id="students-panel" hidden>
+          <p class="eyebrow">Teacher area</p>
+          <h1>My Students</h1>
+          <p class="dashboard-lead">Manage which students can access each course and ebook after manual payment check.</p>
+
+          <div class="students-manager-card">
+            <div class="students-manager-header">
+              <div>
+                <h2>Student access</h2>
+                <p>Tick a box to give access. Untick it to remove access.</p>
+              </div>
+              <button type="button" class="btn btn-small" id="refresh-students-btn">Refresh</button>
+            </div>
+
+            <div class="students-table-wrap">
+              <table class="students-access-table" aria-label="Student course and ebook access table">
+                <thead id="students-access-head">
+                  <tr>
+                    <th scope="col">Student</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Course access</th>
+                    <th scope="col">Ebook access</th>
+                  </tr>
+                </thead>
+                <tbody id="students-access-list">
+                  <tr>
+                    <td colspan="4" class="students-table-empty">Loading students...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="dashboard-panel teacher-only-panel" id="prices-panel" hidden>
+          <p class="eyebrow">Teacher area</p>
+          <h1>My Prices</h1>
+          <p class="dashboard-lead">Edit course, ebook, and private class prices. These prices are used across the website.</p>
+
+          <form class="prices-manager-card" id="prices-form">
+            <div class="students-manager-header">
+              <div>
+                <h2>Website prices</h2>
+                <p>Enter Thai Baht and USD prices, then click Save Prices.</p>
+              </div>
+            </div>
+
+            <div class="prices-table-wrap">
+              <table class="prices-table" aria-label="Website price editor">
+                <thead>
+                  <tr>
+                    <th scope="col">Item</th>
+                    <th scope="col">THB</th>
+                    <th scope="col">USD</th>
+                  </tr>
+                </thead>
+                <tbody id="prices-list">
+                  <tr><td colspan="3" class="students-table-empty">Loading prices...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="prices-actions">
+              <p class="price-status" id="price-status" aria-live="polite"></p>
+              <button type="submit" class="btn">Save Prices</button>
+            </div>
+          </form>
         </div>
 
         <div class="dashboard-panel" id="chat-panel">
@@ -212,7 +285,9 @@
       where,
       addDoc,
       onSnapshot,
-      orderBy
+      orderBy,
+      arrayUnion,
+      arrayRemove
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -266,6 +341,12 @@
     const chatComposeForm = document.getElementById("chat-compose-form");
     const chatMessageInput = document.getElementById("chat-message-input");
     const chatSendBtn = document.getElementById("chat-send-btn");
+    const studentsAccessHead = document.getElementById("students-access-head");
+    const studentsAccessList = document.getElementById("students-access-list");
+    const refreshStudentsBtn = document.getElementById("refresh-students-btn");
+    const pricesForm = document.getElementById("prices-form");
+    const pricesList = document.getElementById("prices-list");
+    const priceStatus = document.getElementById("price-status");
 
     let currentUser = null;
     let currentProfile = {
@@ -281,6 +362,8 @@
     let unsubscribeMessages = null;
     let ebookPreviewImages = [];
     let ebookPreviewIndex = 0;
+    let availableStudentCourses = [];
+    let availableStudentEbooks = [];
 
     function setText(id, value) {
       const element = document.getElementById(id);
@@ -301,6 +384,20 @@
       setText("profile-username", username);
       setText("profile-email", currentProfile.email || "");
       setText("profile-role", role.charAt(0).toUpperCase() + role.slice(1));
+      updateTeacherOnlyDashboard();
+    }
+
+    function updateTeacherOnlyDashboard() {
+      const isTeacher = currentProfile.role === "teacher" || currentProfile.role === "admin";
+
+      document.querySelectorAll(".teacher-only-tab, .teacher-only-panel").forEach((element) => {
+        element.hidden = !isTeacher;
+      });
+
+      if (!isTeacher && window.location.hash === "#students") {
+        activateDashboardTab("profile");
+        history.replaceState(null, "", "#profile");
+      }
     }
 
 
@@ -323,6 +420,138 @@
       `;
     }
 
+
+    const defaultPricing = {
+      courses: {
+        "beginner-thai-course": { title: "Complete Beginner Thai Course", thb: "1390", usd: "39" },
+      },
+      ebooks: {
+        "beginner-thai-ebook": { title: "Beginner Thai Ebook", thb: "490", usd: "15" }
+      },
+      privateCourses: {
+        "private-10": { title: "Private 10 Classes", thb: "7000", usd: "" },
+        "private-20": { title: "Private 20 Classes", thb: "12000", usd: "" },
+        "semi-group-10": { title: "Semi Group 10 Classes", thb: "11100", usd: "" },
+        "semi-group-20": { title: "Semi Group 20 Classes", thb: "20000", usd: "" }
+      }
+    };
+
+    let currentPricing = JSON.parse(JSON.stringify(defaultPricing));
+    const pricingDocRef = doc(db, "siteSettings", "pricing");
+
+    function mergePricing(saved = {}) {
+      return {
+        courses: { ...defaultPricing.courses, ...(saved.courses || {}) },
+        ebooks: { ...defaultPricing.ebooks, ...(saved.ebooks || {}) },
+        privateCourses: { ...defaultPricing.privateCourses, ...(saved.privateCourses || {}) }
+      };
+    }
+
+    function bahtDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `฿${number.toLocaleString("en-US")}` : `฿${raw}`;
+    }
+
+    function usdDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `$${number.toFixed(2)}` : `$${raw}`;
+    }
+
+    function priceDisplay(item) {
+      const thb = bahtDisplay(item?.thb);
+      const usd = usdDisplay(item?.usd);
+      return [thb, usd].filter(Boolean).join(" / ");
+    }
+
+    async function loadWebsitePricing() {
+      try {
+        const pricingSnap = await getDoc(pricingDocRef);
+        currentPricing = mergePricing(pricingSnap.exists() ? pricingSnap.data() : {});
+      } catch (error) {
+        console.warn("Could not load website pricing:", error);
+        currentPricing = mergePricing({});
+      }
+      applyPricingToDefaultProducts();
+      renderPricesForm();
+    }
+
+    function applyPricingToDefaultProducts() {
+      defaultEbooks.forEach((ebook) => {
+        const price = currentPricing.ebooks?.[ebook.id];
+        if (!price) return;
+        ebook.thbDisplay = bahtDisplay(price.thb) || ebook.thbDisplay;
+        ebook.usdDisplay = usdDisplay(price.usd) || ebook.usdDisplay;
+      });
+    }
+
+    function renderPriceGroup(groupKey, label) {
+      const group = currentPricing[groupKey] || {};
+      const rows = Object.entries(group).map(([id, item]) => `
+        <tr>
+          <td>
+            <strong class="price-item-title">${escapeHtml(item.title || id)}</strong>
+            <span class="price-item-id">${escapeHtml(label)}</span>
+          </td>
+          <td><input type="number" min="0" step="1" class="price-input" data-price-group="${groupKey}" data-price-id="${escapeHtml(id)}" data-price-field="thb" value="${escapeHtml(item.thb || '')}" placeholder="THB"></td>
+          <td><input type="number" min="0" step="0.01" class="price-input" data-price-group="${groupKey}" data-price-id="${escapeHtml(id)}" data-price-field="usd" value="${escapeHtml(item.usd || '')}" placeholder="USD"></td>
+        </tr>
+      `).join("");
+      return `
+        <tr class="prices-section-row"><td colspan="3">${escapeHtml(label)}</td></tr>
+        ${rows}
+      `;
+    }
+
+    function renderPricesForm() {
+      if (!pricesList) return;
+      pricesList.innerHTML = [
+        renderPriceGroup("courses", "Course prices"),
+        renderPriceGroup("ebooks", "Ebook prices"),
+        renderPriceGroup("privateCourses", "Private course prices")
+      ].join("");
+    }
+
+    function collectPricesFromForm() {
+      const nextPricing = mergePricing(currentPricing);
+      pricesList?.querySelectorAll(".price-input").forEach((input) => {
+        const group = input.dataset.priceGroup;
+        const id = input.dataset.priceId;
+        const field = input.dataset.priceField;
+        if (!nextPricing[group] || !nextPricing[group][id]) return;
+        nextPricing[group][id][field] = input.value.trim();
+      });
+      return nextPricing;
+    }
+
+    pricesForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!isTeacherAccount()) return;
+
+      const submitButton = pricesForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      if (priceStatus) priceStatus.textContent = "Saving prices...";
+
+      try {
+        currentPricing = collectPricesFromForm();
+        await setDoc(pricingDocRef, {
+          ...currentPricing,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        applyPricingToDefaultProducts();
+        await loadProfileEbooks();
+        renderPricesForm();
+        if (priceStatus) priceStatus.textContent = "Prices saved.";
+      } catch (error) {
+        console.warn("Could not save prices:", error);
+        if (priceStatus) priceStatus.textContent = error.message || "Could not save prices.";
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
 
     const defaultEbooks = [
       {
@@ -559,6 +788,288 @@
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
+    }
+
+
+    const defaultCourses = [
+      {
+        id: "beginner-thai-course",
+        title: "Complete Beginner Thai Course",
+        description: "Continue your Thai learning journey with structured chapters, worksheets, and quizzes."
+      }
+    ];
+
+    function isTeacherAccount() {
+      return currentProfile.role === "teacher" || currentProfile.role === "admin";
+    }
+
+    function normalizeAccessList(value) {
+      return Array.isArray(value) ? value.filter(Boolean) : [];
+    }
+
+    function accessColumnLabel(item, fallback) {
+      const label = item?.title ?? item?.name;
+
+      if (typeof label === "string" && label.trim() && !/^\d+$/.test(label.trim())) {
+        return label.trim();
+      }
+
+      if (typeof item?.id === "string" && item.id.trim()) {
+        return item.id
+          .replace(/[-_]/g, " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+
+      return fallback || "Access";
+    }
+
+    function isValidAccessProductTitle(value) {
+      return typeof value === "string" && value.trim() && !/^\d+$/.test(value.trim());
+    }
+
+    async function loadAvailableStudentCourses() {
+      const courses = [];
+
+      try {
+        const coursesSnap = await getDocs(collection(db, "courses"));
+
+        coursesSnap.forEach((courseDoc) => {
+          const data = courseDoc.data();
+          courses.push({
+            id: courseDoc.id,
+            title: data.title || data.name || "Untitled course",
+            description: data.description || ""
+          });
+        });
+      } catch (error) {
+        console.warn("Could not load courses for student access table:", error);
+      }
+
+      if (!courses.some((course) => course.id === defaultCourses[0].id)) {
+        courses.unshift(defaultCourses[0]);
+      }
+
+      availableStudentCourses = courses.length ? courses : [...defaultCourses];
+      return availableStudentCourses;
+    }
+
+    async function loadAvailableStudentEbooks() {
+      const ebooks = [];
+
+      try {
+        const ebooksSnap = await getDocs(collection(db, "ebooks"));
+
+        ebooksSnap.forEach((ebookDoc) => {
+          const data = ebookDoc.data();
+          const title = isValidAccessProductTitle(data.title)
+            ? data.title.trim()
+            : isValidAccessProductTitle(data.name)
+              ? data.name.trim()
+              : "";
+
+          const pdfs = Array.isArray(data.pdfs) ? data.pdfs : [];
+          const pdfUrls = pdfs.map((pdf) => pdf?.url || "");
+          const looksLikeDefaultEbook =
+            data.cover === defaultEbooks[0].cover ||
+            pdfUrls.includes(defaultEbooks[0].pdfs[0].url) ||
+            ebookDoc.id === defaultEbooks[0].id;
+
+          if (looksLikeDefaultEbook) {
+            return;
+          }
+
+          if (!title) {
+            return;
+          }
+
+          ebooks.push({
+            id: ebookDoc.id,
+            title,
+            description: data.description || ""
+          });
+        });
+      } catch (error) {
+        console.warn("Could not load ebooks collection for student access table. Using default ebook:", error);
+      }
+
+      const fallbackEbooks = defaultEbooks.map((ebook) => ({
+        id: ebook.id,
+        title: ebook.title,
+        description: ebook.description
+      }));
+
+      fallbackEbooks.forEach((fallbackEbook) => {
+        if (!ebooks.some((ebook) => ebook.id === fallbackEbook.id)) {
+          ebooks.unshift(fallbackEbook);
+        }
+      });
+
+      availableStudentEbooks = ebooks.length ? ebooks : fallbackEbooks;
+      return availableStudentEbooks;
+    }
+
+    function renderStudentsAccessTable(students, courses, ebooks) {
+      if (!studentsAccessHead || !studentsAccessList) return;
+
+      const courseHeaders = courses.map((course) => `
+        <th scope="col" class="students-access-product students-access-course">${escapeHtml(accessColumnLabel(course, "Course"))}</th>
+      `).join("");
+
+      const ebookHeaders = ebooks.map((ebook) => `
+        <th scope="col" class="students-access-product students-access-ebook">${escapeHtml(accessColumnLabel(ebook, "Ebook"))}</th>
+      `).join("");
+
+      studentsAccessHead.innerHTML = `
+        <tr>
+          <th scope="col">Student</th>
+          <th scope="col">Email</th>
+          ${courseHeaders}
+          ${ebookHeaders}
+        </tr>
+      `;
+
+      const totalColumns = 2 + courses.length + ebooks.length;
+
+      if (!students.length) {
+        studentsAccessList.innerHTML = `
+          <tr>
+            <td colspan="${totalColumns}" class="students-table-empty">No student accounts found.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      studentsAccessList.innerHTML = students.map((student) => {
+        const name = student.fullName || student.username || student.email || "Student";
+        const email = student.email || "";
+        const enrolledCourses = normalizeAccessList(student.enrolledCourses);
+        const purchasedEbooks = normalizeAccessList(student.purchasedEbooks);
+
+        const courseCells = courses.map((course) => `
+          <td>
+            <label class="student-access-check-label" title="Toggle course access">
+              <input
+                type="checkbox"
+                class="student-access-checkbox"
+                data-student-id="${escapeHtml(student.uid)}"
+                data-access-type="course"
+                data-access-id="${escapeHtml(course.id)}"
+                ${enrolledCourses.includes(course.id) ? "checked" : ""}
+              >
+              <span class="sr-only">${escapeHtml(name)} access to ${escapeHtml(accessColumnLabel(course, "Course"))}</span>
+            </label>
+          </td>
+        `).join("");
+
+        const ebookCells = ebooks.map((ebook) => `
+          <td>
+            <label class="student-access-check-label" title="Toggle ebook access">
+              <input
+                type="checkbox"
+                class="student-access-checkbox"
+                data-student-id="${escapeHtml(student.uid)}"
+                data-access-type="ebook"
+                data-access-id="${escapeHtml(ebook.id)}"
+                ${purchasedEbooks.includes(ebook.id) ? "checked" : ""}
+              >
+              <span class="sr-only">${escapeHtml(name)} access to ${escapeHtml(accessColumnLabel(ebook, "Ebook"))}</span>
+            </label>
+          </td>
+        `).join("");
+
+        return `
+          <tr data-student-id="${escapeHtml(student.uid)}">
+            <td>
+              <strong class="students-table-name">${escapeHtml(name)}</strong>
+              <span class="students-table-username">${escapeHtml(student.username || "")}</span>
+            </td>
+            <td>${escapeHtml(email)}</td>
+            ${courseCells}
+            ${ebookCells}
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadStudentsAccessManager() {
+      if (!studentsAccessList || !isTeacherAccount()) return;
+
+      studentsAccessList.innerHTML = `
+        <tr>
+          <td colspan="4" class="students-table-empty">Loading students...</td>
+        </tr>
+      `;
+
+      try {
+        const [courses, ebooks] = await Promise.all([
+          loadAvailableStudentCourses(),
+          loadAvailableStudentEbooks()
+        ]);
+
+        const students = [];
+        const studentsQuery = query(collection(db, "users"), where("role", "==", "student"));
+        const studentsSnap = await getDocs(studentsQuery);
+
+        studentsSnap.forEach((studentDoc) => {
+          if (studentDoc.id === currentUser?.uid) return;
+          students.push({ uid: studentDoc.id, ...studentDoc.data() });
+        });
+
+        students.sort((a, b) => {
+          const nameA = (a.fullName || a.username || a.email || "").toLowerCase();
+          const nameB = (b.fullName || b.username || b.email || "").toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+        renderStudentsAccessTable(students, courses, ebooks);
+      } catch (error) {
+        console.warn("Could not load student access manager:", error);
+        studentsAccessList.innerHTML = `
+          <tr>
+            <td colspan="4" class="students-table-empty">Could not load students. Check Firestore rules for reading users, courses, and ebooks.</td>
+          </tr>
+        `;
+      }
+    }
+
+    async function handleStudentAccessChange(event) {
+      const checkbox = event.target.closest(".student-access-checkbox");
+      if (!checkbox || !studentsAccessList?.contains(checkbox)) return;
+
+      if (!isTeacherAccount()) {
+        checkbox.checked = !checkbox.checked;
+        alert("Only teacher accounts can update student access.");
+        return;
+      }
+
+      const studentId = checkbox.dataset.studentId;
+      const accessType = checkbox.dataset.accessType;
+      const accessId = checkbox.dataset.accessId;
+      const checked = checkbox.checked;
+      const fieldName = accessType === "course" ? "enrolledCourses" : "purchasedEbooks";
+
+      if (!studentId || !accessId || !["course", "ebook"].includes(accessType)) {
+        checkbox.checked = !checked;
+        alert("Missing student or product information.");
+        return;
+      }
+
+      checkbox.disabled = true;
+      checkbox.classList.add("saving");
+
+      try {
+        await updateDoc(doc(db, "users", studentId), {
+          [fieldName]: checked ? arrayUnion(accessId) : arrayRemove(accessId),
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        checkbox.checked = !checked;
+        console.warn("Could not update student access:", error);
+        alert(error.message || "Could not update student access. Check Firestore rules.");
+      } finally {
+        checkbox.disabled = false;
+        checkbox.classList.remove("saving");
+      }
     }
 
 
@@ -824,10 +1335,21 @@
       tab.addEventListener("click", () => {
         activateDashboardTab(tab.dataset.tab);
         history.replaceState(null, "", `#${tab.dataset.tab}`);
+
+        if (tab.dataset.tab === "students") {
+          loadStudentsAccessManager();
+        }
+
+        if (tab.dataset.tab === "prices") {
+          loadWebsitePricing();
+        }
       });
     });
 
     window.addEventListener("hashchange", activateDashboardTabFromHash);
+
+    refreshStudentsBtn?.addEventListener("click", loadStudentsAccessManager);
+    studentsAccessList?.addEventListener("change", handleStudentAccessChange);
 
     editButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -1021,9 +1543,15 @@ onAuthStateChanged(auth, async (user) => {
 
       currentProfile = { fullName, username, email, role, enrolledCourses, purchasedEbooks };
       renderProfile();
+      await loadWebsitePricing();
       await loadProfileCourses();
       await loadProfileEbooks();
       await loadChatContacts();
+
+      if (role === "teacher" || role === "admin") {
+        await loadStudentsAccessManager();
+      }
+
       activateDashboardTabFromHash();
     });
   </script>

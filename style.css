@@ -674,3 +674,11 @@ h3 {
     width:100%;
   }
 }
+
+.ebook-product-price {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--brown);
+  font-size: 1.15rem;
+  font-weight: 900;
+}
