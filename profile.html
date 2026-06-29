@@ -126,6 +126,67 @@
           <p class="dashboard-lead" id="ebooks-lead">Browse available ebooks. Click Buy Ebook to open the payment page.</p>
 
           <div class="ebook-card-grid" id="profile-ebook-list"></div>
+
+          <div class="teacher-ebook-tools teacher-only-panel" id="teacher-ebook-tools" hidden>
+            <button type="button" class="add-course-card add-ebook-card" id="add-ebook-card">
+              <span>+</span>
+              <strong>Add Ebook</strong>
+              <small>Create a draft, upload samples and PDF, then publish it.</small>
+            </button>
+
+            <form class="ebook-editor-card" id="ebook-editor-form" hidden>
+              <div class="students-manager-header">
+                <div>
+                  <p class="eyebrow" id="ebook-editor-mode">New ebook</p>
+                  <h2 id="ebook-editor-title">Add Ebook</h2>
+                  <p>Upload a cover, sample pictures, PDF files, prices, then save as draft or publish.</p>
+                </div>
+                <button type="button" class="profile-edit-close" id="ebook-editor-close" aria-label="Close ebook editor">×</button>
+              </div>
+
+              <div class="ebook-editor-grid">
+                <div class="form-group">
+                  <label for="ebook-title-input">Ebook title</label>
+                  <input type="text" id="ebook-title-input" placeholder="Beginner Thai Ebook" required>
+                </div>
+                <div class="form-group">
+                  <label for="ebook-thb-input">Price THB</label>
+                  <input type="number" min="0" step="1" id="ebook-thb-input" placeholder="490">
+                </div>
+                <div class="form-group">
+                  <label for="ebook-usd-input">Price USD</label>
+                  <input type="number" min="0" step="0.01" id="ebook-usd-input" placeholder="15.00">
+                </div>
+                <div class="form-group ebook-editor-wide">
+                  <label for="ebook-description-input">Description</label>
+                  <textarea id="ebook-description-input" rows="4" placeholder="Describe what students will learn from this ebook." required></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="ebook-cover-input">Cover image</label>
+                  <input type="file" id="ebook-cover-input" accept="image/*">
+                  <small id="ebook-current-cover"></small>
+                </div>
+                <div class="form-group">
+                  <label for="ebook-samples-input">Sample pictures</label>
+                  <input type="file" id="ebook-samples-input" accept="image/*" multiple>
+                  <small>Add multiple sample pages. Existing samples stay unless you upload new ones.</small>
+                </div>
+                <div class="form-group ebook-editor-wide">
+                  <label for="ebook-pdfs-input">PDF files</label>
+                  <input type="file" id="ebook-pdfs-input" accept="application/pdf,.pdf" multiple>
+                  <small>Add one or more PDF files. Existing PDFs stay unless you upload new ones.</small>
+                </div>
+              </div>
+
+              <div class="ebook-editor-preview" id="ebook-editor-preview"></div>
+
+              <div class="ebook-editor-actions">
+                <p class="ebook-editor-status" id="ebook-editor-status" aria-live="polite"></p>
+                <button type="button" class="btn btn-secondary" id="ebook-save-draft-btn">Save Draft</button>
+                <button type="submit" class="btn" id="ebook-publish-btn">Publish</button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <div class="dashboard-panel teacher-only-panel" id="students-panel" hidden>
@@ -287,8 +348,16 @@
       onSnapshot,
       orderBy,
       arrayUnion,
-      arrayRemove
+      arrayRemove,
+      deleteDoc
     } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDzHrLjI3Blqi9p7tn7c6Qj4qgP0IUFhrg",
@@ -303,6 +372,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     const tabs = document.querySelectorAll(".dashboard-tab");
     const panels = document.querySelectorAll(".dashboard-panel");
@@ -347,6 +417,24 @@
     const pricesForm = document.getElementById("prices-form");
     const pricesList = document.getElementById("prices-list");
     const priceStatus = document.getElementById("price-status");
+    const teacherEbookTools = document.getElementById("teacher-ebook-tools");
+    const addEbookCard = document.getElementById("add-ebook-card");
+    const ebookEditorForm = document.getElementById("ebook-editor-form");
+    const ebookEditorMode = document.getElementById("ebook-editor-mode");
+    const ebookEditorTitle = document.getElementById("ebook-editor-title");
+    const ebookEditorClose = document.getElementById("ebook-editor-close");
+    const ebookTitleInput = document.getElementById("ebook-title-input");
+    const ebookDescriptionInput = document.getElementById("ebook-description-input");
+    const ebookThbInput = document.getElementById("ebook-thb-input");
+    const ebookUsdInput = document.getElementById("ebook-usd-input");
+    const ebookCoverInput = document.getElementById("ebook-cover-input");
+    const ebookSamplesInput = document.getElementById("ebook-samples-input");
+    const ebookPdfsInput = document.getElementById("ebook-pdfs-input");
+    const ebookCurrentCover = document.getElementById("ebook-current-cover");
+    const ebookEditorPreview = document.getElementById("ebook-editor-preview");
+    const ebookEditorStatus = document.getElementById("ebook-editor-status");
+    const ebookSaveDraftBtn = document.getElementById("ebook-save-draft-btn");
+    const ebookPublishBtn = document.getElementById("ebook-publish-btn");
 
     let currentUser = null;
     let currentProfile = {
@@ -364,6 +452,8 @@
     let ebookPreviewIndex = 0;
     let availableStudentCourses = [];
     let availableStudentEbooks = [];
+    let allProfileEbooks = [];
+    let editingEbookId = null;
 
     function setText(id, value) {
       const element = document.getElementById(id);
@@ -393,6 +483,10 @@
       document.querySelectorAll(".teacher-only-tab, .teacher-only-panel").forEach((element) => {
         element.hidden = !isTeacher;
       });
+
+      if (teacherEbookTools) {
+        teacherEbookTools.hidden = !isTeacher;
+      }
 
       if (!isTeacher && window.location.hash === "#students") {
         activateDashboardTab("profile");
@@ -439,12 +533,125 @@
     let currentPricing = JSON.parse(JSON.stringify(defaultPricing));
     const pricingDocRef = doc(db, "siteSettings", "pricing");
 
-    function mergePricing(saved = {}) {
+    function livePriceValue(savedItem, product, field) {
+      const keys = field === "thb"
+        ? ["thb", "priceTHB", "priceThb"]
+        : ["usd", "priceUSD", "priceUsd"];
+
+      for (const key of keys) {
+        const savedValue = savedItem?.[key];
+        if (savedValue !== undefined && savedValue !== null && String(savedValue).trim() !== "") {
+          return String(savedValue).trim();
+        }
+      }
+
+      for (const key of keys) {
+        const productValue = product?.[key];
+        if (productValue !== undefined && productValue !== null && String(productValue).trim() !== "") {
+          return String(productValue).trim();
+        }
+      }
+
+      return "";
+    }
+
+    function productTitle(product, fallbackId) {
+      const title = product?.title || product?.name;
+      if (typeof title === "string" && title.trim() && !/^\d+$/.test(title.trim())) {
+        return title.trim();
+      }
+
+      return String(fallbackId || "Untitled product")
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function pricingFromProducts(products = [], savedGroup = {}) {
+      const output = {};
+
+      products.forEach((product) => {
+        const id = product?.id;
+        if (!id || output[id]) return;
+        const savedItem = savedGroup?.[id] || {};
+
+        output[id] = {
+          title: productTitle(product, id),
+          thb: livePriceValue(savedItem, product, "thb"),
+          usd: livePriceValue(savedItem, product, "usd")
+        };
+      });
+
+      return output;
+    }
+
+    function mergePricing(saved = {}, liveProducts = {}) {
       return {
-        courses: { ...defaultPricing.courses, ...(saved.courses || {}) },
-        ebooks: { ...defaultPricing.ebooks, ...(saved.ebooks || {}) },
+        courses: pricingFromProducts(liveProducts.courses || [], saved.courses || {}),
+        ebooks: pricingFromProducts(liveProducts.ebooks || [], saved.ebooks || {}),
         privateCourses: { ...defaultPricing.privateCourses, ...(saved.privateCourses || {}) }
       };
+    }
+
+    async function getLivePricingProducts() {
+      const courses = [];
+      const ebooks = [];
+
+      try {
+        const coursesSnap = await getDocs(collection(db, "courses"));
+        coursesSnap.forEach((courseDoc) => {
+          const data = courseDoc.data();
+          courses.push({
+            id: courseDoc.id,
+            ...data,
+            title: productTitle(data, courseDoc.id)
+          });
+        });
+      } catch (error) {
+        console.warn("Could not load courses for pricing:", error);
+      }
+
+      if (Array.isArray(defaultCourses)) {
+        defaultCourses.forEach((course) => {
+          if (course?.id && !courses.some((item) => item.id === course.id)) {
+            courses.unshift({
+              ...course,
+              title: productTitle(course, course.id)
+            });
+          }
+        });
+      }
+
+      const ebookDocIds = new Set();
+
+      try {
+        const ebooksSnap = await getDocs(collection(db, "ebooks"));
+        ebooksSnap.forEach((ebookDoc) => {
+          const data = ebookDoc.data();
+          ebookDocIds.add(ebookDoc.id);
+          if (data.deleted === true) return;
+          ebooks.push({
+            id: ebookDoc.id,
+            ...data,
+            title: productTitle(data, ebookDoc.id)
+          });
+        });
+      } catch (error) {
+        console.warn("Could not load ebooks for pricing:", error);
+      }
+
+      if (Array.isArray(defaultEbooks)) {
+        defaultEbooks.forEach((ebook) => {
+          if (ebook?.id && !ebookDocIds.has(ebook.id)) {
+            const { isDefault, ...cleanEbook } = ebook;
+            ebooks.unshift({
+              ...cleanEbook,
+              title: productTitle(cleanEbook, cleanEbook.id)
+            });
+          }
+        });
+      }
+
+      return { courses, ebooks };
     }
 
     function bahtDisplay(value) {
@@ -468,13 +675,21 @@
     }
 
     async function loadWebsitePricing() {
+      let savedPricing = {};
+      let liveProducts = { courses: [], ebooks: [] };
+
       try {
-        const pricingSnap = await getDoc(pricingDocRef);
-        currentPricing = mergePricing(pricingSnap.exists() ? pricingSnap.data() : {});
+        const [pricingSnap, products] = await Promise.all([
+          getDoc(pricingDocRef),
+          getLivePricingProducts()
+        ]);
+        savedPricing = pricingSnap.exists() ? pricingSnap.data() : {};
+        liveProducts = products;
       } catch (error) {
         console.warn("Could not load website pricing:", error);
-        currentPricing = mergePricing({});
       }
+
+      currentPricing = mergePricing(savedPricing, liveProducts);
       applyPricingToDefaultProducts();
       renderPricesForm();
     }
@@ -490,16 +705,23 @@
 
     function renderPriceGroup(groupKey, label) {
       const group = currentPricing[groupKey] || {};
-      const rows = Object.entries(group).map(([id, item]) => `
-        <tr>
-          <td>
-            <strong class="price-item-title">${escapeHtml(item.title || id)}</strong>
-            <span class="price-item-id">${escapeHtml(label)}</span>
-          </td>
-          <td><input type="number" min="0" step="1" class="price-input" data-price-group="${groupKey}" data-price-id="${escapeHtml(id)}" data-price-field="thb" value="${escapeHtml(item.thb || '')}" placeholder="THB"></td>
-          <td><input type="number" min="0" step="0.01" class="price-input" data-price-group="${groupKey}" data-price-id="${escapeHtml(id)}" data-price-field="usd" value="${escapeHtml(item.usd || '')}" placeholder="USD"></td>
-        </tr>
-      `).join("");
+      const entries = Object.entries(group);
+      const rows = entries.length
+        ? entries.map(([id, item]) => `
+          <tr>
+            <td>
+              <strong class="price-item-title">${escapeHtml(item.title || id)}</strong>
+              <span class="price-item-id">${escapeHtml(label)}</span>
+            </td>
+            <td><input type="number" min="0" step="1" class="price-input" data-price-group="${groupKey}" data-price-id="${escapeHtml(id)}" data-price-field="thb" value="${escapeHtml(item.thb || '')}" placeholder="THB"></td>
+            <td><input type="number" min="0" step="0.01" class="price-input" data-price-group="${groupKey}" data-price-id="${escapeHtml(id)}" data-price-field="usd" value="${escapeHtml(item.usd || '')}" placeholder="USD"></td>
+          </tr>
+        `).join("")
+        : `
+          <tr>
+            <td colspan="3" class="students-table-empty">No existing ${escapeHtml(label.toLowerCase())} found.</td>
+          </tr>
+        `;
       return `
         <tr class="prices-section-row"><td colspan="3">${escapeHtml(label)}</td></tr>
         ${rows}
@@ -516,14 +738,20 @@
     }
 
     function collectPricesFromForm() {
-      const nextPricing = mergePricing(currentPricing);
+      const nextPricing = {
+        courses: { ...(currentPricing.courses || {}) },
+        ebooks: { ...(currentPricing.ebooks || {}) },
+        privateCourses: { ...(currentPricing.privateCourses || {}) }
+      };
+
       pricesList?.querySelectorAll(".price-input").forEach((input) => {
         const group = input.dataset.priceGroup;
         const id = input.dataset.priceId;
         const field = input.dataset.priceField;
         if (!nextPricing[group] || !nextPricing[group][id]) return;
-        nextPricing[group][id][field] = input.value.trim();
+        nextPricing[group][id] = { ...nextPricing[group][id], [field]: input.value.trim() };
       });
+
       return nextPricing;
     }
 
@@ -538,12 +766,13 @@
       try {
         currentPricing = collectPricesFromForm();
         await setDoc(pricingDocRef, {
-          ...currentPricing,
+          courses: currentPricing.courses || {},
+          ebooks: currentPricing.ebooks || {},
+          privateCourses: currentPricing.privateCourses || {},
           updatedAt: serverTimestamp()
-        }, { merge: true });
-        applyPricingToDefaultProducts();
+        });
+        await loadWebsitePricing();
         await loadProfileEbooks();
-        renderPricesForm();
         if (priceStatus) priceStatus.textContent = "Prices saved.";
       } catch (error) {
         console.warn("Could not save prices:", error);
@@ -560,6 +789,8 @@
         description: "A downloadable ebook for beginner Thai learners, with clear examples and visual practice pages.",
         thbDisplay: "฿490",
         usdDisplay: "$15.00",
+        thb: "490",
+        usd: "15",
         cover: "assets/ebooks/cover.png",
         samples: [
           "assets/ebooks/sample1.png",
@@ -572,7 +803,9 @@
             title: "Beginner Thai Ebook PDF",
             url: "assets/ebooks/beginner-thai-ebook.pdf"
           }
-        ]
+        ],
+        published: true,
+        isDefault: true
       }
     ];
 
@@ -586,7 +819,11 @@
     }
 
     function ebookPdfLinksTemplate(ebook) {
-      const pdfs = Array.isArray(ebook.pdfs) && ebook.pdfs.length ? ebook.pdfs : defaultEbooks[0].pdfs;
+      const pdfs = Array.isArray(ebook.pdfs) && ebook.pdfs.length ? ebook.pdfs : [];
+
+      if (!pdfs.length) {
+        return `<p class="ebook-empty-note">No PDF file is attached yet.</p>`;
+      }
 
       return `
         <div class="ebook-pdf-area" aria-label="Purchased ebook files">
@@ -603,12 +840,26 @@
       `;
     }
 
+    function ebookStatusBadge(ebook, owned) {
+      if (owned) return "Purchased ebook";
+      if (isTeacherAccount()) return ebook.published ? "Published ebook" : "Draft ebook";
+      return "Available ebook";
+    }
+
+    function ebookPriceText(ebook) {
+      const thb = ebook.thbDisplay || bahtDisplay(ebook.thb || ebook.priceTHB || ebook.priceThb);
+      const usd = ebook.usdDisplay || usdDisplay(ebook.usd || ebook.priceUSD || ebook.priceUsd);
+      return [thb, usd].filter(Boolean).join(" / ");
+    }
+
     function ebookCardTemplate(ebook) {
       const ebookId = ebook.id || "beginner-thai-ebook";
       const title = ebook.title || "Beginner Thai Ebook";
       const description = ebook.description || "A downloadable ebook for beginner Thai learners.";
-      const samples = Array.isArray(ebook.samples) && ebook.samples.length ? ebook.samples : defaultEbooks[0].samples;
+      const samples = Array.isArray(ebook.samples) && ebook.samples.length ? ebook.samples : [];
       const owned = Array.isArray(currentProfile.purchasedEbooks) && currentProfile.purchasedEbooks.includes(ebookId);
+      const teacher = isTeacherAccount();
+      const price = ebookPriceText(ebook);
 
       return `
         <article class="ebook-dashboard-card" data-ebook-id="${escapeHtml(ebookId)}">
@@ -616,14 +867,24 @@
             ${ebookImageTemplate(ebook.cover || defaultEbooks[0].cover, `${title} cover`, "ebook-cover-preview")}
           </div>
           <div class="ebook-card-body">
-            <span class="course-tag">${owned ? "Purchased ebook" : "Available ebook"}</span>
+            <div class="ebook-card-topline">
+              <span class="course-tag ${ebook.published ? 'ebook-published-tag' : 'ebook-draft-tag'}">${escapeHtml(ebookStatusBadge(ebook, owned))}</span>
+              ${teacher ? `<span class="ebook-admin-id">${escapeHtml(ebookId)}</span>` : ""}
+            </div>
             <h2>${escapeHtml(title)}</h2>
             <p>${escapeHtml(description)}</p>
-            ${!owned ? `<strong class="ebook-price">${escapeHtml(ebook.thbDisplay || "฿490")} / ${escapeHtml(ebook.usdDisplay || "$15.00")} PayPal</strong>` : ""}
+            ${!owned ? `<strong class="ebook-price">${escapeHtml(price || "Price not set")} PayPal</strong>` : ""}
             <div class="ebook-sample-grid" aria-label="Sample ebook pages">
-              ${samples.slice(0, 4).map((sample, index) => ebookImageTemplate(sample, `Sample page ${index + 1}`, "ebook-sample-preview")).join("")}
+              ${samples.slice(0, 8).map((sample, index) => ebookImageTemplate(sample, `Sample page ${index + 1}`, "ebook-sample-preview")).join("")}
             </div>
-            ${owned ? ebookPdfLinksTemplate(ebook) : '<button type="button" class="btn ebook-buy-btn">Buy Ebook</button>'}
+            ${owned || teacher ? ebookPdfLinksTemplate(ebook) : '<button type="button" class="btn ebook-buy-btn">Buy Ebook</button>'}
+            ${teacher ? `
+              <div class="ebook-admin-actions">
+                <button type="button" class="btn btn-secondary ebook-edit-btn" data-ebook-id="${escapeHtml(ebookId)}">Edit</button>
+                <button type="button" class="btn btn-secondary ebook-publish-toggle-btn" data-ebook-id="${escapeHtml(ebookId)}">${ebook.published ? "Unpublish" : "Publish"}</button>
+                <button type="button" class="btn btn-secondary ebook-delete-btn" data-ebook-id="${escapeHtml(ebookId)}">Delete</button>
+              </div>
+            ` : ""}
           </div>
         </article>
       `;
@@ -700,14 +961,22 @@
       if (ebookLightboxCounter) ebookLightboxCounter.textContent = "1 / 1";
     }
 
-    function renderEbookCards(ebooks = defaultEbooks) {
+    function renderEbookCards(ebooks = []) {
       if (!ebookList) return;
 
-      ebooksEyebrow.textContent = "Digital books";
-      ebooksLead.textContent = "Browse the available ebook. Click Buy Ebook to open the payment page.";
+      const teacher = isTeacherAccount();
+      ebooksEyebrow.textContent = teacher ? "Teacher ebook manager" : "Digital books";
+      ebooksLead.textContent = teacher
+        ? "Create ebooks, upload sample pictures and PDF files, save drafts, and publish when ready."
+        : "Browse available ebooks. Click Buy Ebook to open the payment page.";
 
-      ebookList.innerHTML = ebooks.map(ebookCardTemplate).join("");
+      if (teacherEbookTools) teacherEbookTools.hidden = !teacher;
 
+      if (!ebooks.length) {
+        ebookList.innerHTML = `<p class="ebook-empty-note">No ebooks to show yet.</p>`;
+      } else {
+        ebookList.innerHTML = ebooks.map(ebookCardTemplate).join("");
+      }
 
       ebookList.querySelectorAll(".ebook-preview-trigger").forEach((button) => {
         button.addEventListener("click", () => openEbookPreview(button));
@@ -720,11 +989,269 @@
           window.location.href = `payment.html?ebook=${encodeURIComponent(card.dataset.ebookId)}`;
         });
       });
+
+      ebookList.querySelectorAll(".ebook-edit-btn").forEach((button) => {
+        button.addEventListener("click", () => openEbookEditor(button.dataset.ebookId));
+      });
+
+      ebookList.querySelectorAll(".ebook-publish-toggle-btn").forEach((button) => {
+        button.addEventListener("click", () => toggleEbookPublished(button.dataset.ebookId));
+      });
+
+      ebookList.querySelectorAll(".ebook-delete-btn").forEach((button) => {
+        button.addEventListener("click", () => deleteEbook(button.dataset.ebookId));
+      });
+    }
+
+    function mergeEbookPricing(ebooks) {
+      return ebooks.map((ebook) => {
+        const price = currentPricing.ebooks?.[ebook.id];
+        if (!price) return ebook;
+        return {
+          ...ebook,
+          thb: price.thb ?? ebook.thb,
+          usd: price.usd ?? ebook.usd,
+          thbDisplay: bahtDisplay(price.thb) || ebook.thbDisplay,
+          usdDisplay: usdDisplay(price.usd) || ebook.usdDisplay
+        };
+      });
+    }
+
+    async function fetchFirestoreEbooks() {
+      const ebooks = [];
+      try {
+        const ebookSnap = await getDocs(collection(db, "ebooks"));
+        ebookSnap.forEach((ebookDoc) => {
+          ebooks.push({ id: ebookDoc.id, ...ebookDoc.data() });
+        });
+      } catch (error) {
+        console.warn("Could not load ebooks collection:", error);
+      }
+      return ebooks;
     }
 
     async function loadProfileEbooks() {
-      renderEbookCards(defaultEbooks);
+      const firestoreEbooks = await fetchFirestoreEbooks();
+      const savedIds = new Set(firestoreEbooks.map((ebook) => ebook.id));
+      const fallbackDefaults = defaultEbooks
+        .filter((ebook) => !savedIds.has(ebook.id))
+        .map(({ isDefault, ...ebook }) => ebook);
+      allProfileEbooks = mergeEbookPricing([...fallbackDefaults, ...firestoreEbooks.filter((ebook) => ebook.deleted !== true)]);
+
+      const teacher = isTeacherAccount();
+      const visibleEbooks = teacher
+        ? allProfileEbooks
+        : allProfileEbooks.filter((ebook) => ebook.published === true || currentProfile.purchasedEbooks?.includes(ebook.id));
+
+      renderEbookCards(visibleEbooks);
+      renderPricesForm();
     }
+
+    function resetEbookEditor() {
+      editingEbookId = null;
+      if (!ebookEditorForm) return;
+      ebookEditorForm.reset();
+      ebookEditorForm.hidden = true;
+      if (ebookEditorStatus) ebookEditorStatus.textContent = "";
+      if (ebookCurrentCover) ebookCurrentCover.textContent = "";
+      if (ebookEditorPreview) ebookEditorPreview.innerHTML = "";
+      if (ebookEditorMode) ebookEditorMode.textContent = "New ebook";
+      if (ebookEditorTitle) ebookEditorTitle.textContent = "Add Ebook";
+    }
+
+    function openEbookEditor(ebookId = null) {
+      if (!isTeacherAccount() || !ebookEditorForm) return;
+      editingEbookId = ebookId;
+      const ebook = ebookId ? allProfileEbooks.find((item) => item.id === ebookId) : null;
+
+      ebookEditorForm.hidden = false;
+      ebookEditorForm.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (ebookEditorStatus) ebookEditorStatus.textContent = "";
+      if (ebookEditorMode) ebookEditorMode.textContent = ebook ? (ebook.published ? "Editing published ebook" : "Editing draft") : "New ebook";
+      if (ebookEditorTitle) ebookEditorTitle.textContent = ebook ? "Edit Ebook" : "Add Ebook";
+
+      ebookTitleInput.value = ebook?.title || "";
+      ebookDescriptionInput.value = ebook?.description || "";
+      ebookThbInput.value = ebook?.thb || ebook?.priceTHB || "";
+      ebookUsdInput.value = ebook?.usd || ebook?.priceUSD || "";
+      ebookCoverInput.value = "";
+      ebookSamplesInput.value = "";
+      ebookPdfsInput.value = "";
+      if (ebookCurrentCover) ebookCurrentCover.textContent = ebook?.cover ? "Current cover is already saved. Upload a new one only if you want to replace it." : "";
+      renderEbookEditorPreview(ebook);
+    }
+
+    function renderEbookEditorPreview(ebook) {
+      if (!ebookEditorPreview) return;
+      if (!ebook) {
+        ebookEditorPreview.innerHTML = `<p class="ebook-empty-note">New ebook files will appear here after saving.</p>`;
+        return;
+      }
+
+      const samples = Array.isArray(ebook.samples) ? ebook.samples : [];
+      const pdfs = Array.isArray(ebook.pdfs) ? ebook.pdfs : [];
+      ebookEditorPreview.innerHTML = `
+        <div class="ebook-editor-preview-section">
+          <strong>Current cover</strong>
+          <img src="${escapeHtml(ebook.cover || defaultEbooks[0].cover)}" alt="Current ebook cover">
+        </div>
+        <div class="ebook-editor-preview-section">
+          <strong>Current sample pictures</strong>
+          <div class="ebook-editor-file-grid">
+            ${samples.length ? samples.map((sample) => `<img src="${escapeHtml(sample)}" alt="Sample image">`).join("") : "<span>No sample pictures yet.</span>"}
+          </div>
+        </div>
+        <div class="ebook-editor-preview-section">
+          <strong>Current PDFs</strong>
+          <div class="ebook-editor-pdf-list">
+            ${pdfs.length ? pdfs.map((pdf) => `<a href="${escapeHtml(pdf.url || '')}" target="_blank" rel="noopener">${escapeHtml(pdf.title || "PDF file")}</a>`).join("") : "<span>No PDF files yet.</span>"}
+          </div>
+        </div>
+      `;
+    }
+
+    function slugifyEbookTitle(title) {
+      const slug = String(title || "ebook")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60);
+      return slug || `ebook-${Date.now()}`;
+    }
+
+    async function uploadEbookFile(file, ebookId, folder) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const fileRef = ref(storage, `ebooks/${ebookId}/${folder}/${Date.now()}-${safeName}`);
+      await uploadBytes(fileRef, file, { contentType: file.type || undefined });
+      const url = await getDownloadURL(fileRef);
+      return { title: file.name, url };
+    }
+
+    async function saveEbookFromEditor(published) {
+      if (!isTeacherAccount() || !ebookEditorForm) return;
+      const title = ebookTitleInput.value.trim();
+      const description = ebookDescriptionInput.value.trim();
+      const thb = ebookThbInput.value.trim();
+      const usd = ebookUsdInput.value.trim();
+
+      if (!title || !description) {
+        alert("Please add ebook title and description.");
+        return;
+      }
+
+      const existing = editingEbookId ? allProfileEbooks.find((ebook) => ebook.id === editingEbookId) : null;
+      const ebookId = editingEbookId || slugifyEbookTitle(title);
+      const coverFile = ebookCoverInput.files?.[0];
+      const sampleFiles = Array.from(ebookSamplesInput.files || []);
+      const pdfFiles = Array.from(ebookPdfsInput.files || []);
+
+      if (!editingEbookId && !coverFile) {
+        alert("Please upload a cover image.");
+        return;
+      }
+
+      ebookSaveDraftBtn.disabled = true;
+      ebookPublishBtn.disabled = true;
+      if (ebookEditorStatus) ebookEditorStatus.textContent = "Saving ebook...";
+
+      try {
+        let cover = existing?.cover || "";
+        if (coverFile) {
+          cover = (await uploadEbookFile(coverFile, ebookId, "cover")).url;
+        }
+
+        let samples = Array.isArray(existing?.samples) ? existing.samples : [];
+        if (sampleFiles.length) {
+          const uploadedSamples = await Promise.all(sampleFiles.map((file) => uploadEbookFile(file, ebookId, "samples")));
+          samples = uploadedSamples.map((item) => item.url);
+        }
+
+        let pdfs = Array.isArray(existing?.pdfs) ? existing.pdfs : [];
+        if (pdfFiles.length) {
+          pdfs = await Promise.all(pdfFiles.map((file) => uploadEbookFile(file, ebookId, "pdfs")));
+        }
+
+        const ebookData = {
+          title,
+          description,
+          thb,
+          usd,
+          cover,
+          samples,
+          pdfs,
+          published,
+          deleted: false,
+          updatedAt: serverTimestamp(),
+          createdBy: currentUser.uid
+        };
+
+        if (!editingEbookId) ebookData.createdAt = serverTimestamp();
+
+        await setDoc(doc(db, "ebooks", ebookId), ebookData, { merge: true });
+        if (ebookEditorStatus) ebookEditorStatus.textContent = published ? "Ebook published." : "Draft saved.";
+        await loadWebsitePricing();
+        await loadProfileEbooks();
+        openEbookEditor(ebookId);
+      } catch (error) {
+        console.warn("Could not save ebook:", error);
+        if (ebookEditorStatus) ebookEditorStatus.textContent = error.message || "Could not save ebook.";
+        alert(error.message || "Could not save ebook. Check Firebase Storage and Firestore rules.");
+      } finally {
+        ebookSaveDraftBtn.disabled = false;
+        ebookPublishBtn.disabled = false;
+      }
+    }
+
+    async function toggleEbookPublished(ebookId) {
+      if (!isTeacherAccount()) return;
+      const ebook = allProfileEbooks.find((item) => item.id === ebookId);
+      if (!ebook) return;
+
+      try {
+        const { isDefault, thbDisplay, usdDisplay, ...ebookData } = ebook;
+        await setDoc(doc(db, "ebooks", ebookId), {
+          ...ebookData,
+          published: !ebook.published,
+          deleted: false,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        await loadWebsitePricing();
+        await loadProfileEbooks();
+      } catch (error) {
+        alert(error.message || "Could not update publish status.");
+      }
+    }
+
+    async function deleteEbook(ebookId) {
+      if (!isTeacherAccount()) return;
+      const ebook = allProfileEbooks.find((item) => item.id === ebookId);
+      if (!ebook) return;
+      if (!confirm(`Delete ${ebook.title || "this ebook"}? This removes it from the website.`)) return;
+
+      try {
+        const { isDefault, thbDisplay, usdDisplay, ...ebookData } = ebook;
+        await setDoc(doc(db, "ebooks", ebookId), {
+          ...ebookData,
+          deleted: true,
+          published: false,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        resetEbookEditor();
+        await loadWebsitePricing();
+        await loadProfileEbooks();
+      } catch (error) {
+        alert(error.message || "Could not delete ebook.");
+      }
+    }
+
+    addEbookCard?.addEventListener("click", () => openEbookEditor(null));
+    ebookEditorClose?.addEventListener("click", resetEbookEditor);
+    ebookSaveDraftBtn?.addEventListener("click", () => saveEbookFromEditor(false));
+    ebookEditorForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveEbookFromEditor(true);
+    });
 
     function renderCourseCards(courses = []) {
       if (!courseList) return;
@@ -867,14 +1394,7 @@
               ? data.name.trim()
               : "";
 
-          const pdfs = Array.isArray(data.pdfs) ? data.pdfs : [];
-          const pdfUrls = pdfs.map((pdf) => pdf?.url || "");
-          const looksLikeDefaultEbook =
-            data.cover === defaultEbooks[0].cover ||
-            pdfUrls.includes(defaultEbooks[0].pdfs[0].url) ||
-            ebookDoc.id === defaultEbooks[0].id;
-
-          if (looksLikeDefaultEbook) {
+          if (data.deleted === true) {
             return;
           }
 

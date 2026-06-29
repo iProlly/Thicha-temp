@@ -1329,3 +1329,210 @@ body.ebook-preview-open {
     width: 100%;
   }
 }
+
+/* Teacher ebook manager */
+.teacher-ebook-tools {
+  margin-top: 24px;
+  display: grid;
+  gap: 22px;
+}
+
+.teacher-ebook-tools[hidden] {
+  display: none !important;
+}
+
+.add-ebook-card {
+  min-height: 170px;
+}
+
+.ebook-editor-card {
+  padding: 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 24px;
+  background: var(--white);
+}
+
+.ebook-editor-card[hidden] {
+  display: none !important;
+}
+
+.ebook-editor-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.6fr 0.6fr;
+  gap: 18px;
+}
+
+.ebook-editor-wide {
+  grid-column: 1 / -1;
+}
+
+.ebook-editor-card textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--brown);
+  font: inherit;
+  resize: vertical;
+}
+
+.ebook-editor-card input[type="file"] {
+  width: 100%;
+  padding: 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 14px;
+  background: #fffaf0;
+  color: var(--brown);
+  font: inherit;
+  font-weight: 800;
+}
+
+.ebook-editor-card small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.ebook-editor-preview {
+  margin-top: 22px;
+  display: grid;
+  gap: 18px;
+}
+
+.ebook-editor-preview-section {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fffaf0;
+}
+
+.ebook-editor-preview-section > strong {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--brown);
+}
+
+.ebook-editor-preview-section > img {
+  width: min(180px, 100%);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--white);
+}
+
+.ebook-editor-file-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ebook-editor-file-grid img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+}
+
+.ebook-editor-pdf-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ebook-editor-pdf-list a,
+.ebook-editor-pdf-list span,
+.ebook-editor-file-grid span {
+  color: var(--brown);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.ebook-editor-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.ebook-editor-status {
+  margin-right: auto;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.ebook-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ebook-admin-id {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ebook-published-tag {
+  background: #e8f5ec;
+}
+
+.ebook-draft-tag {
+  background: #fff1b5;
+}
+
+.ebook-admin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.ebook-admin-actions .btn {
+  flex: 1 1 140px;
+}
+
+.ebook-delete-btn {
+  border-color: #b43636 !important;
+  color: #b43636 !important;
+  background: #fff3f3 !important;
+}
+
+.ebook-empty-note {
+  padding: 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 18px;
+  color: var(--muted);
+  font-weight: 800;
+  background: #fffaf0;
+}
+
+@media (max-width: 900px) {
+  .ebook-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ebook-editor-file-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .ebook-editor-card {
+    padding: 20px;
+  }
+
+  .ebook-editor-actions .btn,
+  .ebook-admin-actions .btn {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .ebook-editor-status {
+    width: 100%;
+  }
+}

@@ -1102,3 +1102,41 @@ textarea.content-block-input {
     left:12px !important;
   }
 }
+
+/* Course info editor */
+.course-info-editor {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 22px;
+  border-radius: 20px;
+  background: var(--white);
+  border: 1px solid var(--line-strong);
+}
+
+.course-info-editor[hidden] {
+  display: none !important;
+}
+
+.course-info-editor input,
+.course-info-editor textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--brown);
+  font: inherit;
+}
+
+.course-info-editor textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.course-info-editor input:focus,
+.course-info-editor textarea:focus {
+  outline: none;
+  border-color: var(--brown);
+  box-shadow: 0 0 0 4px rgba(193, 219, 232, 0.45);
+}

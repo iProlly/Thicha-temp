@@ -47,8 +47,25 @@
               <p class="eyebrow" id="course-mode-label">Course content</p>
               <h1 id="course-title">Loading...</h1>
             </div>
+            <button type="button" class="btn btn-secondary" id="edit-course-info-btn" style="display: none;">Edit Course Name</button>
           </div>
           <p class="course-description" id="course-description"></p>
+
+          <form class="course-info-editor" id="course-info-editor" hidden>
+            <p class="eyebrow">Course settings</p>
+            <div class="form-group">
+              <label for="edit-course-title-input">Course name</label>
+              <input type="text" id="edit-course-title-input" required />
+            </div>
+            <div class="form-group">
+              <label for="edit-course-description-input">Course description</label>
+              <textarea id="edit-course-description-input" rows="3"></textarea>
+            </div>
+            <div class="editor-actions">
+              <button type="button" class="btn btn-secondary" id="cancel-course-info-btn">Cancel</button>
+              <button type="submit" class="btn">Save Course Info</button>
+            </div>
+          </form>
         </article>
 
         <article class="course-main-card course-module-card">
@@ -158,6 +175,11 @@
     const courseNavigationArea = document.getElementById("course-navigation-area");
     const courseShell = document.querySelector(".course-shell");
     const sidebarToggle = document.getElementById("course-sidebar-toggle");
+    const editCourseInfoBtn = document.getElementById("edit-course-info-btn");
+    const courseInfoEditor = document.getElementById("course-info-editor");
+    const editCourseTitleInput = document.getElementById("edit-course-title-input");
+    const editCourseDescriptionInput = document.getElementById("edit-course-description-input");
+    const cancelCourseInfoBtn = document.getElementById("cancel-course-info-btn");
 
     let currentUser = null;
     let currentRole = "student";
@@ -338,6 +360,7 @@
       setText("course-mode-label", canEditCourse() ? "Teacher course view" : "Course content");
 
       addModuleSidebarBtn.style.display = canEditCourse() ? "inline-flex" : "none";
+      if (editCourseInfoBtn) editCourseInfoBtn.style.display = canEditCourse() ? "inline-flex" : "none";
       editModuleBtn.style.display = canEditCourse() && getSelectedItem() ? "inline-flex" : "none";
       const selected = getSelectedItem();
       editModuleBtn.textContent = selected?.item.kind === "quiz" ? "Edit Quiz" : (selectedSubmoduleIndex === null ? "Edit Module" : "Edit Submodule");
@@ -1210,6 +1233,8 @@
 
       try {
         await updateDoc(courseRef, {
+          title: currentCourse.title || "Untitled course",
+          description: currentCourse.description || "",
           modules: currentCourse.modules || [],
           teacherId: currentCourse.teacherId || currentUser.uid,
           updatedAt: serverTimestamp()
@@ -1252,6 +1277,67 @@
       renderCourse();
       renderModuleEditor();
     }
+
+    function openCourseInfoEditor() {
+      if (!canEditCourse() || !courseInfoEditor) return;
+      editCourseTitleInput.value = currentCourse.title || "";
+      editCourseDescriptionInput.value = currentCourse.description || "";
+      courseInfoEditor.hidden = false;
+      editCourseTitleInput.focus();
+    }
+
+    function closeCourseInfoEditor() {
+      if (courseInfoEditor) courseInfoEditor.hidden = true;
+    }
+
+    async function saveCourseInfo(event) {
+      event.preventDefault();
+      if (!canEditCourse()) return;
+
+      const title = editCourseTitleInput.value.trim();
+      const description = editCourseDescriptionInput.value.trim();
+
+      if (!title) {
+        alert("Please enter a course name.");
+        return;
+      }
+
+      const submitButton = courseInfoEditor.querySelector('button[type="submit"]');
+      const originalSubmitText = submitButton?.textContent || "Save Course Info";
+
+      try {
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Saving...";
+        }
+
+        currentCourse.title = title;
+        currentCourse.description = description;
+
+        await setDoc(doc(db, "courses", courseId), {
+          title,
+          description,
+          modules: currentCourse.modules || [],
+          teacherId: currentCourse.teacherId || currentUser.uid,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+
+        renderCourse();
+        closeCourseInfoEditor();
+      } catch (error) {
+        console.error("Could not save course info:", error);
+        alert(error?.message || "Could not save course info. Check Firestore rules and try again.");
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalSubmitText;
+        }
+      }
+    }
+
+    editCourseInfoBtn?.addEventListener("click", openCourseInfoEditor);
+    cancelCourseInfoBtn?.addEventListener("click", closeCourseInfoEditor);
+    courseInfoEditor?.addEventListener("submit", saveCourseInfo);
 
     editModuleBtn.addEventListener("click", openInlineEditor);
 
