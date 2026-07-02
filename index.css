@@ -259,16 +259,22 @@
   align-items: flex-start;
 }
 
-.benefit-icon {
-  width: 58px;
-  height: 58px;
-  display: grid;
-  place-items: center;
-  color: var(--brown);
-  border: 2px solid #09276d;
-  border-radius: 18px;
-  font-size: 1.6rem;
-  line-height: 1;
+.benefit-icon{
+    width:70px;
+    height:70px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:none;
+    border:none;
+}
+
+.benefit-icon img{
+    width:70px;
+    height:70px;
+    object-fit:contain;
 }
 
 .benefit-point h3,
@@ -960,9 +966,9 @@
   background: var(--cream-dark);
 }
 
-.benefit-icon {
-  border-color: var(--brown);
-  background: var(--white);
+.benefit-icon{
+    background: transparent !important;
+    border: none !important;
 }
 
 .phone-placeholder {
@@ -1280,17 +1286,26 @@
   text-align: center;
 }
 
-.social-contact-icon {
-  width: 60px;
-  height: 60px;
-  display: grid;
-  place-items: center;
-  margin: 0 auto 18px;
-  border: 2px solid var(--brown);
-  border-radius: 18px;
-  color: var(--brown);
-  font-size: 2rem;
-  line-height: 1;
+.social-contact-icon{
+    width:70px;
+    height:70px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-shrink:0;
+
+    background:transparent;
+    border:none;
+    margin:0 auto 18px;
+}
+
+.social-contact-icon img{
+    width:64px;
+    height:64px;
+    object-fit:contain;
+    display:block;
 }
 
 .social-contact-card h3 {
@@ -1397,7 +1412,32 @@
     border-radius:28px;
     padding:32px;
 }
+.package-card{
+    position: relative;
+    overflow: hidden;
+}
+.package-card.hot::before{
+    content:"HOT";
 
+    position:absolute;
+    top:12px;
+    right:-30px;
+
+    width:120px;
+    padding:8px 0;
+
+    background:#e53935;
+    color:#fff;
+
+    text-align:center;
+    font-size:.8rem;
+    font-weight:900;
+    letter-spacing:.08em;
+
+    transform:rotate(45deg);
+
+    box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
 .package-card h3{
     font-size:2rem;
     margin-bottom:20px;
@@ -1620,10 +1660,32 @@ grid-template-rows:1fr 1fr;
 gap:24px;
 }
 .pricing-category{
-display:flex;
-flex-direction:column;
-justify-content:center;
-min-height:260px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:flex-start;
+    padding-top:40px;   /* adjust this until it lines up */
+    min-height:260px;
+}
+.pricing-category-header{
+    display:flex;
+    align-items:center;
+    gap:22px;
+}
+
+.pricing-category-header img{
+    width:72px;
+    height:72px;
+    object-fit:contain;
+    flex-shrink:0;
+}
+
+.pricing-category-header h3{
+    margin:0 0 8px;
+}
+
+.pricing-category-header p{
+    margin:0;
+    line-height:1.5;
 }
 .pricing-grid-custom{
 display:grid!important;
@@ -1906,3 +1968,60 @@ body {
   }
 }
 
+.express-title{
+    font-family: "Sora", sans-serif;
+    font-size: clamp(2rem,5vw,3.25rem);
+    font-weight: 800;
+    line-height: .95;
+    letter-spacing: -.06em;
+    color: #43302e;
+    margin-bottom: 28px;
+}
+.self-paced-title{
+    position:relative;
+    display:inline-block;
+
+    font-family:'Caveat',cursive;
+    font-size:7rem;
+    line-height:1;
+    color:#2f3ea8;
+
+    margin-bottom:28px;
+    z-index:1;
+}
+
+.self-paced-title::after{
+    content:"";
+    position:absolute;
+
+    left:50%;
+    bottom:-10px;
+
+    width:110%;
+    height:120px;
+
+    transform:translate(-50%, 40px);
+    z-index:-1;
+    opacity:.7;
+
+    background:url("assets/underline.jpg") center/contain no-repeat;
+    background-size: 100% 30%;
+}
+
+.benefits-heading h2::after{
+    content:"";
+    position:absolute;
+
+    left:50%;
+    bottom:-10px;
+
+    width:110%;
+    height:120px;
+
+    transform:translate(-50%, 40px);
+    z-index:-1;
+    opacity:.5;
+
+    background:url("assets/underline.jpg") center/contain no-repeat;
+    background-size: 100% 30%;
+}

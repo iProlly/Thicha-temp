@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="index.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="site-header" id="home">
@@ -101,20 +104,28 @@
   <div class="container">
     <div style="max-width:980px;margin:0 auto;background:#fff;border:1px solid var(--line-strong);border-radius:32px;padding:42px;text-align:center;">
 
-      <div style="font-size:3rem;font-family:cursive;color:#2f3ea8;margin-bottom:10px;">
-        Self-Paced 🇹🇭
-      </div>
+      <div class="self-paced-title">
+    Self-Paced
+</div>
 
-      <h2 style="margin-bottom:28px;">
-        Speak Thai in 10 Days<br>
+      <h2 class="express-title">
+        Thai in 10 Days<br>
         The 7-Hour Express Beginner Course
       </h2>
 
-      <img src="assets/ebooks/cover.png"
+      <img src="assets/course.jpg"
            alt="Speak Thai in 10 Days"
            style="width:min(100%,700px);display:block;margin:0 auto 28px;border-radius:24px;">
 
-      <div style="display:grid;gap:10px;max-width:520px;margin:0 auto 28px;text-align:left;font-weight:700;">
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:16px 40px;
+        max-width:700px;
+        margin:0 auto 28px;
+        text-align:left;
+        font-weight:700;
+        font-size:1.5rem;">
         <div>✓ 7 Hours of Lessons</div>
         <div>✓ Beginner Friendly</div>
         <div>✓ Self-Paced Learning</div>
@@ -183,7 +194,9 @@
 
         <div class="benefits-showcase">
           <div class="benefit-point">
-            <div class="benefit-icon" aria-hidden="true">◎</div>
+            <div class="benefit-icon">
+              <img src="assets/icons/exp.png" alt="Experience Icon">
+            </div>
             <div>
               <h3>Enhance Your Everyday Experience</h3>
               <p>Step-by-step lessons that build a solid Thai foundation and help you gain your speaking skill.</p>
@@ -191,7 +204,9 @@
           </div>
 
           <div class="benefit-point">
-            <div class="benefit-icon" aria-hidden="true">▣</div>
+            <div class="benefit-icon">
+              <img src="assets/icons/learn.png" alt="Learn Anytime, Anywhere Icon">
+            </div>
             <div>
               <h3>Learn Anytime, Anywhere</h3>
               <p>Study Thai at your own pace, on your own schedule. Perfect if you’re busy or travel frequently.</p>
@@ -199,7 +214,9 @@
           </div>
 
           <div class="benefit-point">
-            <div class="benefit-icon" aria-hidden="true">☷</div>
+            <div class="benefit-icon">
+              <img src="assets/icons/commu.png" alt="Supportive Community Icon">
+            </div>
             <div>
               <h3>Supportive Community</h3>
               <p>Be part of a learning community that shares tips and real-life speaking practice to help you stay on track and improve your Thai.</p>
@@ -207,7 +224,9 @@
           </div>
 
           <div class="benefit-point">
-            <div class="benefit-icon" aria-hidden="true">◷</div>
+            <div class="benefit-icon">
+              <img src="assets/icons/lifetime.png" alt="Lifetime Access Icon">
+            </div>
             <div>
               <h3>Lifetime Access</h3>
               <p>Access your course on any device and enjoy lifetime access to our user-friendly platform.</p>
@@ -215,7 +234,9 @@
           </div>
 
           <div class="benefit-point">
-            <div class="benefit-icon" aria-hidden="true">☑</div>
+            <div class="benefit-icon">
+              <img src="assets/icons/quiz.png" alt="Interactive Quizzes Icon">
+            </div>
             <div>
               <h3>Interactive quizzes</h3>
               <p>Check your understanding and track your progress.</p>
@@ -237,18 +258,29 @@
     <div class="pricing-layout">
       <div class="pricing-label-column">
         <div class="pricing-category">
-          <h3>Private Classes</h3>
-          <p>Personalized learning. Faster progress.</p>
+          <div class="pricing-category-header">
+            <img src="assets/icons/1.png" alt="Private Classes">
+            <div>
+              <h3>Private Classes</h3>
+              <p>Personalized learning. Faster progress.</p>
+            </div>
+          </div>
         </div>
+
         <div class="pricing-category">
-          <h3>Semi Group Classes</h3>
-          <p>Learn together. Stay motivated. 2 - 3 students with flexible scheduling.</p>
+          <div class="pricing-category-header">
+            <img src="assets/icons/3.png" alt="Semi Group Classes">
+            <div>
+              <h3>Semi Group Classes</h3>
+              <p>Learn together. Stay motivated. 2 - 3 students with flexible scheduling.</p>
+            </div>
+          </div>
         </div>
       </div>
-
+        
       <div class="pricing-grid-custom">
         <article class="package-card"><h3>Private 10 Classes</h3><p class="package-price" data-private-price="private-10">฿7,000 <span>/10 lessons</span></p><p class="package-validity">(Validity 1 month 15 days)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
-        <article class="package-card"><h3>Private 20 Classes</h3><p class="package-price" data-private-price="private-20">฿12,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
+        <article class="package-card hot"><h3>Private 20 Classes</h3><p class="package-price" data-private-price="private-20">฿12,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
         <article class="package-card"><h3>Semi Group 10 Classes</h3><p class="package-price" data-private-price="semi-group-10">฿11,100 <span>/10 lessons</span></p><p class="package-validity">(Validity 1 month 14 days)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
         <article class="package-card"><h3>Semi Group 20 Classes</h3><p class="package-price" data-private-price="semi-group-20">฿20,000 <span>/20 lessons</span></p><p class="package-validity">(Validity 3 months)</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSe5Ems-DiysPzc5VQIc2_0SoznNDMv7Dw3ki1gT-z5j5B0kag/viewform" class="package-btn book-chat-btn">Book Now</a></article>
       </div>
@@ -487,7 +519,9 @@
 
         <div class="social-contact-grid">
           <article class="social-contact-card">
-            <div class="social-contact-icon" aria-hidden="true">✉</div>
+            <div class="social-contact-icon">
+              <img src="assets/logo/email.png" alt="Phone Icon">
+            </div>
             <h3>Email</h3>
             <p>Send me a message directly</p>
             <div class="social-contact-box">
@@ -501,7 +535,9 @@
           </article>
 
           <article class="social-contact-card">
-            <div class="social-contact-icon" aria-hidden="true">☏</div>
+            <div class="social-contact-icon">
+              <img src="assets/logo/whatsapp.png" alt="Phone Icon">
+            </div>
             <h3>WhatsApp</h3>
             <p>Quick chat and instant responses</p>
             <div class="social-contact-box">
@@ -515,7 +551,9 @@
           </article>
 
           <article class="social-contact-card">
-            <div class="social-contact-icon instagram-icon" aria-hidden="true">◎</div>
+            <div class="social-contact-icon">
+              <img src="assets/logo/ig.png" alt="Phone Icon">
+            </div>
             <h3>Instagram</h3>
             <p>Follow and message on Instagram</p>
             <div class="social-contact-box">
@@ -546,7 +584,7 @@
       <div class="footer-links">
         <a href="#">Privacy Policy</a>
         <a href="#">Terms and Conditions</a>
-        <a href="mailto:hello@example.com">hello@example.com</a>
+        <a href="mailto:mildy.nono@gmail.com">mildy.nono@gmail.com</a>
       </div>
     </div>
   </footer>
@@ -666,60 +704,232 @@
   </script>
 
 
-  <script>
-    const ebookProducts = {
-      beginner: {
-        title: "Beginner Thai Ebook",
-        description: "A simple Thai ebook for beginner learners. It includes clear explanations, useful vocabulary, sample sentences, and practice pages to help you build confidence step by step.",
-        buyUrl: "profile.html#ebooks",
-        images: [
-          "assets/ebooks/cover.png",
-          "assets/ebooks/sample1.png",
-          "assets/ebooks/sample2.png",
-          "assets/ebooks/sample3.png",
-          "assets/ebooks/sample4.png"
-        ]
-      }
-    };
+  <script type="module">
+    import { getApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
     const ebookSelect = document.getElementById("ebook-product-select");
     const ebookImage = document.getElementById("ebook-preview-image");
     const ebookImageBtn = document.getElementById("ebook-preview-image-btn");
     const ebookCounter = document.getElementById("ebook-preview-counter");
     const ebookCopy = document.getElementById("ebook-product-copy");
-    let ebookCurrentKey = "beginner";
+    const ebookPrevBtn = document.querySelector(".ebook-preview-prev");
+    const ebookNextBtn = document.querySelector(".ebook-preview-next");
+
+    const defaultHomepageEbook = {
+      id: "beginner-thai-ebook",
+      title: "Beginner Thai Ebook",
+      description: "A simple Thai ebook for beginner learners. It includes clear explanations, useful vocabulary, sample sentences, and practice pages to help you build confidence step by step.",
+      thb: "490",
+      usd: "15",
+      cover: "assets/ebooks/cover.png",
+      samples: [
+        "assets/ebooks/sample1.png",
+        "assets/ebooks/sample2.png",
+        "assets/ebooks/sample3.png",
+        "assets/ebooks/sample4.png"
+      ],
+      published: true,
+      deleted: false
+    };
+
+    let ebookProducts = [];
     let ebookCurrentIndex = 0;
+    let ebookCurrentImageIndex = 0;
+    let homepageEbookPricing = {};
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function productTitle(product, fallbackId) {
+      const title = product?.title || product?.name;
+      if (typeof title === "string" && title.trim() && !/^\d+$/.test(title.trim())) {
+        return title.trim();
+      }
+
+      return String(fallbackId || "Untitled ebook")
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function bahtDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `฿${number.toLocaleString("en-US")}` : `฿${raw}`;
+    }
+
+    function usdDisplay(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      const number = Number(raw.replace(/,/g, ""));
+      return Number.isFinite(number) ? `$${number.toFixed(2)}` : `$${raw}`;
+    }
+
+    function livePriceValue(savedItem, product, field) {
+      const keys = field === "thb"
+        ? ["thb", "priceTHB", "priceThb"]
+        : ["usd", "priceUSD", "priceUsd"];
+
+      for (const key of keys) {
+        const savedValue = savedItem?.[key];
+        if (savedValue !== undefined && savedValue !== null && String(savedValue).trim() !== "") {
+          return String(savedValue).trim();
+        }
+      }
+
+      for (const key of keys) {
+        const productValue = product?.[key];
+        if (productValue !== undefined && productValue !== null && String(productValue).trim() !== "") {
+          return String(productValue).trim();
+        }
+      }
+
+      return "";
+    }
+
+    function ebookPriceText(ebook) {
+      const savedPrice = homepageEbookPricing?.[ebook.id] || {};
+      const thb = livePriceValue(savedPrice, ebook, "thb");
+      const usd = livePriceValue(savedPrice, ebook, "usd");
+      return [bahtDisplay(thb), usdDisplay(usd)].filter(Boolean).join(" / ");
+    }
+
+    function ebookImages(ebook) {
+      const images = [];
+      if (ebook?.cover) images.push(ebook.cover);
+      if (Array.isArray(ebook?.samples)) {
+        ebook.samples.forEach((sample) => {
+          if (sample && !images.includes(sample)) images.push(sample);
+        });
+      }
+      return images.length ? images : [defaultHomepageEbook.cover];
+    }
+
+    function normalizeEbook(ebook, id) {
+      return {
+        ...ebook,
+        id,
+        title: productTitle(ebook, id),
+        description: ebook?.description || "Preview this Thai learning ebook and sample pages.",
+        cover: ebook?.cover || defaultHomepageEbook.cover,
+        samples: Array.isArray(ebook?.samples) ? ebook.samples : []
+      };
+    }
+
+    async function loadHomepageEbookPricing(db) {
+      try {
+        const snap = await getDoc(doc(db, "siteSettings", "pricing"));
+        homepageEbookPricing = snap.exists() ? (snap.data().ebooks || {}) : {};
+      } catch (error) {
+        console.warn("Could not load ebook pricing:", error);
+        homepageEbookPricing = {};
+      }
+    }
+
+    async function loadPublishedHomepageEbooks() {
+      const db = getFirestore(getApp());
+      await loadHomepageEbookPricing(db);
+
+      const ebooks = [];
+      const seenIds = new Set();
+
+      try {
+        const ebookSnap = await getDocs(collection(db, "ebooks"));
+        ebookSnap.forEach((ebookDoc) => {
+          const data = ebookDoc.data();
+          if (data.deleted === true || data.published !== true) return;
+          seenIds.add(ebookDoc.id);
+          ebooks.push(normalizeEbook(data, ebookDoc.id));
+        });
+      } catch (error) {
+        console.warn("Could not load published ebooks:", error);
+      }
+
+      if (!seenIds.has(defaultHomepageEbook.id)) {
+        ebooks.unshift(normalizeEbook(defaultHomepageEbook, defaultHomepageEbook.id));
+      }
+
+      ebookProducts = ebooks;
+      renderEbookDropdown();
+      renderEbookProduct();
+    }
+
+    function renderEbookDropdown() {
+      if (!ebookSelect) return;
+
+      if (!ebookProducts.length) {
+        ebookSelect.innerHTML = '<option value="">No ebooks available</option>';
+        ebookSelect.disabled = true;
+        return;
+      }
+
+      ebookSelect.disabled = false;
+      ebookSelect.innerHTML = ebookProducts.map((ebook, index) => `
+        <option value="${index}">${escapeHtml(ebook.title)}</option>
+      `).join("");
+      ebookSelect.value = String(ebookCurrentIndex);
+    }
 
     function renderEbookProduct() {
-      const product = ebookProducts[ebookCurrentKey];
-      ebookImage.src = product.images[ebookCurrentIndex];
-      ebookImage.alt = `${product.title} sample page ${ebookCurrentIndex + 1}`;
-      ebookCounter.textContent = `${ebookCurrentIndex + 1} / ${product.images.length}`;
+      const ebook = ebookProducts[ebookCurrentIndex];
+
+      if (!ebook || !ebookImage || !ebookCounter || !ebookCopy) {
+        if (ebookCopy) {
+          ebookCopy.innerHTML = `
+            <h3>No ebooks available</h3>
+            <p>Published ebooks will appear here automatically.</p>
+          `;
+        }
+        return;
+      }
+
+      const images = ebookImages(ebook);
+      ebookCurrentImageIndex = (ebookCurrentImageIndex + images.length) % images.length;
+      const image = images[ebookCurrentImageIndex];
+      const price = ebookPriceText(ebook) || "Price not set";
+
+      ebookImage.src = image;
+      ebookImage.alt = `${ebook.title} sample page ${ebookCurrentImageIndex + 1}`;
+      ebookCounter.textContent = `${ebookCurrentImageIndex + 1} / ${images.length}`;
       ebookCopy.innerHTML = `
-        <h3>${product.title}</h3>
-        <p>${product.description}</p>
-        <strong class="ebook-product-price" data-ebook-price="beginner-thai-ebook">฿490 / $15.00</strong>
-        <a href="${product.buyUrl}" class="btn ebook-product-btn">Buy Ebook</a>
+        <h3>${escapeHtml(ebook.title)}</h3>
+        <p>${escapeHtml(ebook.description)}</p>
+        <strong class="ebook-product-price" data-ebook-price="${escapeHtml(ebook.id)}">${escapeHtml(price)}</strong>
+        <a href="payment.html?ebook=${encodeURIComponent(ebook.id)}" class="btn ebook-product-btn">Buy Ebook</a>
       `;
     }
 
     function moveEbookPreview(step) {
-      const product = ebookProducts[ebookCurrentKey];
-      ebookCurrentIndex = (ebookCurrentIndex + step + product.images.length) % product.images.length;
+      const ebook = ebookProducts[ebookCurrentIndex];
+      if (!ebook) return;
+      const images = ebookImages(ebook);
+      ebookCurrentImageIndex = (ebookCurrentImageIndex + step + images.length) % images.length;
       renderEbookProduct();
     }
 
     ebookSelect?.addEventListener("change", () => {
-      ebookCurrentKey = ebookSelect.value;
-      ebookCurrentIndex = 0;
+      ebookCurrentIndex = Number(ebookSelect.value) || 0;
+      ebookCurrentImageIndex = 0;
       renderEbookProduct();
     });
 
     ebookImageBtn?.addEventListener("click", () => moveEbookPreview(1));
-    document.querySelector(".ebook-preview-next")?.addEventListener("click", () => moveEbookPreview(1));
-    document.querySelector(".ebook-preview-prev")?.addEventListener("click", () => moveEbookPreview(-1));
+    ebookNextBtn?.addEventListener("click", () => moveEbookPreview(1));
+    ebookPrevBtn?.addEventListener("click", () => moveEbookPreview(-1));
 
-    renderEbookProduct();
+    loadPublishedHomepageEbooks();
   </script>
 
 
